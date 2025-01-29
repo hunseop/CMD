@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}시나리오{% endblock %}
+
+{% block content %}
+<div class="scenarios-container">
+    <div class="page-header">
+        <h2>시나리오</h2>
+        <div class="actions">
+            <button class="btn primary">시나리오 생성</button>
+            <button class="btn">실행 이력</button>
+        </div>
+    </div>
+
+    <div class="scenarios-grid">
+        <div class="scenarios-list">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>시나리오명</th>
+                        <th>유형</th>
+                        <th>마지막 실행</th>
+                        <th>상태</th>
+                        <th>작업</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="5" class="empty-message">등록된 시나리오가 없습니다.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %} 

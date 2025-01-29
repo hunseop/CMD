@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}정책 관리{% endblock %}
+
+{% block content %}
+<div class="policies-container">
+    <div class="page-header">
+        <h2>정책 관리</h2>
+        <div class="actions">
+            <button class="btn primary">정책 추가</button>
+            <button class="btn">정책 분석</button>
+        </div>
+    </div>
+
+    <div class="search-filters">
+        <div class="search-bar">
+            <input type="text" placeholder="정책 검색...">
+            <button class="btn">검색</button>
+        </div>
+        <div class="filters">
+            <select>
+                <option>전체 장비</option>
+            </select>
+            <select>
+                <option>전체 상태</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="policies-grid">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>정책 ID</th>
+                    <th>장비</th>
+                    <th>규칙</th>
+                    <th>상태</th>
+                    <th>마지막 수정</th>
+                    <th>작업</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="6" class="empty-message">등록된 정책이 없습니다.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %} 

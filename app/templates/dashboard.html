@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}대시보드{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h2>시스템 현황</h2>
+    <div class="dashboard-grid">
+        <div class="card">
+            <h3>장비 상태</h3>
+            <div class="status-summary">
+                <p>전체 장비: <span>0</span></p>
+                <p>정상: <span>0</span></p>
+                <p>경고: <span>0</span></p>
+                <p>오류: <span>0</span></p>
+            </div>
+        </div>
+        <div class="card">
+            <h3>정책 현황</h3>
+            <div class="policy-summary">
+                <p>전체 정책: <span>0</span></p>
+                <p>활성 정책: <span>0</span></p>
+                <p>중복 정책: <span>0</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

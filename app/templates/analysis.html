@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}분석{% endblock %}
+
+{% block content %}
+<div class="analysis-container">
+    <div class="page-header">
+        <h2>분석</h2>
+        <div class="actions">
+            <button class="btn primary">리포트 생성</button>
+            <button class="btn">데이터 내보내기</button>
+        </div>
+    </div>
+
+    <div class="analysis-grid">
+        <div class="card">
+            <h3>정책 사용 현황</h3>
+            <div class="chart-placeholder">
+                차트가 들어갈 영역
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>장비 성능</h3>
+            <div class="chart-placeholder">
+                차트가 들어갈 영역
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>보안 위험도</h3>
+            <div class="chart-placeholder">
+                차트가 들어갈 영역
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

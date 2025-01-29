@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMD - {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h1>CMD</h1>
+        </div>
+        <ul class="nav-links">
+            <li><a href="{{ url_for('main.dashboard') }}">대시보드</a></li>
+            <li><a href="{{ url_for('main.devices') }}">장비 관리</a></li>
+            <li><a href="{{ url_for('main.policies') }}">정책 관리</a></li>
+            <li><a href="{{ url_for('main.analysis') }}">분석</a></li>
+            <li><a href="{{ url_for('main.scenarios') }}">시나리오</a></li>
+        </ul>
+    </nav>
+    
+    <main class="content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html> 
