@@ -7,10 +7,6 @@ main_bp = Blueprint('main', __name__)
 def dashboard():
     return render_template('dashboard.html')
 
-@main_bp.route('/devices')
-def devices():
-    return render_template('devices.html')
-
 @main_bp.route('/policies')
 def policies():
     return render_template('policies.html')

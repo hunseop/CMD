@@ -1,0 +1,59 @@
+/* 테이블 스타일 */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.data-table th,
+.data-table td {
+    padding: 12px 15px;
+    text-align: left;
+}
+
+.data-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.data-table tr {
+    border-bottom: 1px solid #e9ecef;
+}
+
+.data-table tr:last-child {
+    border-bottom: none;
+}
+
+.data-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.empty-message {
+    text-align: center;
+    padding: 30px;
+    color: #7f8c8d;
+    font-style: italic;
+}
+
+/* 검색 바 */
+.search-bar {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+.search-bar input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px 0 0 4px;
+    outline: none;
+}
+
+.search-bar .btn {
+    border-radius: 0 4px 4px 0;
+} 

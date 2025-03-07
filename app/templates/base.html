@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CMD - {% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
     <nav class="sidebar">
@@ -13,7 +14,7 @@
         </div>
         <ul class="nav-links">
             <li><a href="{{ url_for('main.dashboard') }}">대시보드</a></li>
-            <li><a href="{{ url_for('main.devices') }}">장비 관리</a></li>
+            <li><a href="{{ url_for('devices.index') }}">장비 관리</a></li>
             <li><a href="{{ url_for('main.policies') }}">정책 관리</a></li>
             <li><a href="{{ url_for('main.analysis') }}">분석</a></li>
             <li><a href="{{ url_for('main.scenarios') }}">시나리오</a></li>
@@ -24,6 +25,18 @@
         {% block content %}{% endblock %}
     </main>
 
+    <!-- 모듈 JS 파일 -->
+    <script src="{{ url_for('static', filename='js/modules/alerts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/modules/search.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/modules/validation.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/modules/modal.js') }}"></script>
+    
+    <!-- 페이지별 JS 파일 -->
+    {% block page_js %}{% endblock %}
+    
+    <!-- 메인 JS 파일 -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    {% block extra_js %}{% endblock %}
 </body>
 </html> 

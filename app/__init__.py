@@ -16,6 +16,9 @@ def create_app():
     from app.routes import main_bp
     app.register_blueprint(main_bp)
     
+    from app.routes.devices import devices_bp
+    app.register_blueprint(devices_bp)
+    
     return app
 
 # 모델 임포트는 circular import를 피하기 위해 create_app 함수 정의 후에 작성
