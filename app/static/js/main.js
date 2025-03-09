@@ -51,9 +51,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 삭제 모달 기능
     const modal = document.getElementById('deleteModal');
+    const modalOverlay = document.getElementById('modal-overlay');
+    
     if (modal) {
         const deleteButtons = document.querySelectorAll('.delete-btn');
-        const closeBtn = document.querySelector('.close');
+        const closeBtn = document.querySelector('.modal-close');
         const cancelBtn = document.getElementById('cancelDelete');
         const deviceNameElement = document.getElementById('deviceName');
         const deleteForm = document.getElementById('deleteForm');
@@ -66,24 +68,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 deviceNameElement.textContent = deviceName;
                 deleteForm.action = `/devices/${deviceId}/delete`;
-                modal.style.display = 'block';
+                modal.classList.add('active');
+                modalOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
             });
         });
         
         // 모달 닫기 기능
-        closeBtn.addEventListener('click', function() {
-            modal.style.display = 'none';
-        });
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                modal.classList.remove('active');
+                modalOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        }
         
-        cancelBtn.addEventListener('click', function() {
-            modal.style.display = 'none';
-        });
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function() {
+                modal.classList.remove('active');
+                modalOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        }
         
         // 모달 외부 클릭 시 닫기
-        window.addEventListener('click', function(event) {
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
+        modalOverlay.addEventListener('click', function() {
+            modal.classList.remove('active');
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = '';
         });
     }
 });

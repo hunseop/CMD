@@ -2,27 +2,33 @@
 .data-table {
     width: 100%;
     border-collapse: collapse;
-    background-color: white;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
+    background-color: var(--card-bg);
+    box-shadow: var(--shadow-sm);
+    border-radius: 8px;
     overflow: hidden;
+    margin-bottom: 20px;
 }
 
 .data-table th,
 .data-table td {
     padding: 12px 15px;
     text-align: left;
+    vertical-align: middle;
 }
 
 .data-table th {
-    background-color: #f8f9fa;
+    background-color: var(--background-color);
     font-weight: 600;
-    color: #2c3e50;
-    border-bottom: 2px solid #e9ecef;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .data-table tr {
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--border-color);
+    transition: var(--transition);
 }
 
 .data-table tr:last-child {
@@ -30,30 +36,151 @@
 }
 
 .data-table tr:hover {
-    background-color: #f8f9fa;
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.data-table td.actions {
+    white-space: nowrap;
+    width: 1%;
 }
 
 .empty-message {
     text-align: center;
     padding: 30px;
-    color: #7f8c8d;
+    color: var(--text-muted);
     font-style: italic;
+}
+
+/* 테이블 반응형 */
+@media (max-width: 768px) {
+    .data-table {
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .data-table th, 
+    .data-table td {
+        white-space: nowrap;
+    }
+}
+
+/* 테이블 페이지네이션 */
+.pagination {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    margin: 20px 0;
+}
+
+.pagination li {
+    margin: 0 5px;
+}
+
+.pagination a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text-color);
+    background-color: var(--card-bg);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.pagination a:hover {
+    background-color: var(--background-color);
+}
+
+.pagination a.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* 테이블 필터 */
+.table-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.filter-item {
+    display: flex;
+    align-items: center;
+    background-color: var(--card-bg);
+    padding: 6px 12px;
+    border-radius: 6px;
+    box-shadow: var(--shadow-sm);
+}
+
+.filter-item label {
+    margin-right: 8px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.filter-item select {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 4px 8px;
+    outline: none;
+}
+
+/* 테이블 상태 표시 */
+.status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.status-indicator.active {
+    background-color: var(--success-color);
+}
+
+.status-indicator.inactive {
+    background-color: var(--text-muted);
+}
+
+.status-indicator.warning {
+    background-color: var(--warning-color);
+}
+
+.status-indicator.error {
+    background-color: var(--danger-color);
 }
 
 /* 검색 바 */
 .search-bar {
     display: flex;
     margin-bottom: 20px;
+    background-color: var(--card-bg);
+    border-radius: 6px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
 }
 
 .search-bar input {
     flex: 1;
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px 0 0 4px;
+    padding: 10px 15px;
+    border: none;
     outline: none;
+    font-size: 14px;
 }
 
-.search-bar .btn {
-    border-radius: 0 4px 4px 0;
+.search-bar button {
+    padding: 10px 15px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.search-bar button:hover {
+    background-color: var(--secondary-color);
 } 

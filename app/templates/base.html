@@ -4,27 +4,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CMD - {% block title %}{% endblock %}</title>
+    <!-- Google Fonts - Pretendard -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <!-- Feather Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.css">
+    <!-- 기본 스타일시트 -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <nav class="sidebar">
-        <div class="sidebar-header">
-            <h1>CMD</h1>
-        </div>
-        <ul class="nav-links">
-            <li><a href="{{ url_for('main.dashboard') }}">대시보드</a></li>
-            <li><a href="{{ url_for('devices.index') }}">장비 관리</a></li>
-            <li><a href="{{ url_for('main.policies') }}">정책 관리</a></li>
-            <li><a href="{{ url_for('main.analysis') }}">분석</a></li>
-            <li><a href="{{ url_for('main.scenarios') }}">시나리오</a></li>
-        </ul>
-    </nav>
-    
-    <main class="content">
-        {% block content %}{% endblock %}
-    </main>
+    <div class="app-container">
+        <header class="top-navbar">
+            <div class="navbar-brand">
+                <h1>CMD</h1>
+            </div>
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <i data-feather="menu"></i>
+            </button>
+            <nav class="navbar-nav">
+                <ul class="nav-links" id="navLinks">
+                    <li>
+                        <a href="{{ url_for('main.dashboard') }}" class="nav-link" data-link>
+                            대시보드
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('devices.index') }}" class="nav-link" data-link>
+                            장비 관리
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('main.policies') }}" class="nav-link" data-link>
+                            정책 관리
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('main.analysis') }}" class="nav-link" data-link>
+                            분석
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('main.scenarios') }}" class="nav-link" data-link>
+                            시나리오
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </header>
+        
+        <main class="content">
+            <div class="content-wrapper">
+                <div class="dashboard-container">
+                    <div class="page-header">
+                        <h2 class="page-title">{% block page_title %}{% endblock %}</h2>
+                    </div>
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </main>
+    </div>
 
+    <!-- 모달 배경 -->
+    <div id="modal-overlay" class="modal-overlay"></div>
+
+    <!-- Feather Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    
     <!-- 모듈 JS 파일 -->
     <script src="{{ url_for('static', filename='js/modules/alerts.js') }}"></script>
     <script src="{{ url_for('static', filename='js/modules/search.js') }}"></script>
@@ -36,6 +81,63 @@
     
     <!-- 메인 JS 파일 -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Feather 아이콘 초기화
+            feather.replace();
+            
+            // 현재 활성화된 메뉴 표시
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // 모바일 메뉴 토글
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const navLinks = document.getElementById('navLinks');
+            
+            if (mobileMenuToggle) {
+                mobileMenuToggle.addEventListener('click', function() {
+                    navLinks.classList.toggle('active');
+                });
+            }
+            
+            // 모달 관련 설정
+            const modalOverlay = document.getElementById('modal-overlay');
+            
+            // 모달 열기 함수
+            window.openModal = function(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.add('active');
+                    modalOverlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            };
+            
+            // 모달 닫기 함수
+            window.closeModal = function(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.remove('active');
+                    modalOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            };
+            
+            // 모달 오버레이 클릭 시 모달 닫기
+            modalOverlay.addEventListener('click', function() {
+                document.querySelectorAll('.modal.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+                modalOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        });
+    </script>
     
     {% block extra_js %}{% endblock %}
 </body>

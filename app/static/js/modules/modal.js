@@ -7,9 +7,11 @@ function initModal(modalId, options = {}) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
     
+    const modalOverlay = document.getElementById('modal-overlay');
+    
     const defaults = {
         openSelector: null,
-        closeSelector: '.close, [data-dismiss="modal"]',
+        closeSelector: '.modal-close, [data-dismiss="modal"]',
         cancelSelector: '[data-action="cancel"]',
         outsideClickClose: true,
         onOpen: null,
@@ -24,7 +26,10 @@ function initModal(modalId, options = {}) {
         openButtons.forEach(button => {
             button.addEventListener('click', function(e) {
                 e.preventDefault();
-                modal.style.display = 'block';
+                modal.classList.add('active');
+                modalOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                
                 if (typeof settings.onOpen === 'function') {
                     settings.onOpen(modal, this);
                 }
@@ -36,7 +41,10 @@ function initModal(modalId, options = {}) {
     const closeButtons = modal.querySelectorAll(settings.closeSelector);
     closeButtons.forEach(button => {
         button.addEventListener('click', function() {
-            modal.style.display = 'none';
+            modal.classList.remove('active');
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+            
             if (typeof settings.onClose === 'function') {
                 settings.onClose(modal);
             }
@@ -47,7 +55,10 @@ function initModal(modalId, options = {}) {
     const cancelButtons = modal.querySelectorAll(settings.cancelSelector);
     cancelButtons.forEach(button => {
         button.addEventListener('click', function() {
-            modal.style.display = 'none';
+            modal.classList.remove('active');
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+            
             if (typeof settings.onClose === 'function') {
                 settings.onClose(modal);
             }
@@ -56,12 +67,13 @@ function initModal(modalId, options = {}) {
     
     // 외부 클릭 시 닫기
     if (settings.outsideClickClose) {
-        window.addEventListener('click', function(event) {
-            if (event.target === modal) {
-                modal.style.display = 'none';
-                if (typeof settings.onClose === 'function') {
-                    settings.onClose(modal);
-                }
+        modalOverlay.addEventListener('click', function() {
+            modal.classList.remove('active');
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+            
+            if (typeof settings.onClose === 'function') {
+                settings.onClose(modal);
             }
         });
     }
@@ -71,10 +83,15 @@ function initModal(modalId, options = {}) {
             if (typeof settings.onOpen === 'function') {
                 settings.onOpen(modal, null, data);
             }
-            modal.style.display = 'block';
+            modal.classList.add('active');
+            modalOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
         },
         close: function() {
-            modal.style.display = 'none';
+            modal.classList.remove('active');
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+            
             if (typeof settings.onClose === 'function') {
                 settings.onClose(modal);
             }

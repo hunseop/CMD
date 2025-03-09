@@ -2,19 +2,18 @@
 
 {% block title %}장비 관리{% endblock %}
 
+{% block page_title %}장비 관리{% endblock %}
+
 {% block page_js %}
 <script src="{{ url_for('static', filename='js/pages/devices.js') }}"></script>
 {% endblock %}
 
 {% block content %}
 <div class="devices-container">
-    <div class="page-header">
-        <h2>장비 관리</h2>
-        <div class="actions">
-            <a href="{{ url_for('devices.create') }}" class="btn primary">장비 추가</a>
-            <button class="btn" id="uploadExcelBtn">엑셀 업로드</button>
-            <a href="{{ url_for('devices.download_excel_template') }}" class="btn">엑셀 템플릿</a>
-        </div>
+    <div class="actions">
+        <a href="{{ url_for('devices.create') }}" class="btn primary">장비 추가</a>
+        <button class="btn" id="uploadExcelBtn">엑셀 업로드</button>
+        <a href="{{ url_for('devices.download_excel_template') }}" class="btn">엑셀 템플릿</a>
     </div>
     
     <div class="search-bar">
@@ -71,54 +70,50 @@
 
 <!-- 삭제 확인 모달 -->
 <div id="deleteModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>장비 삭제 확인</h3>
-            <span class="close">&times;</span>
-        </div>
-        <div class="modal-body">
-            <p>정말 <strong id="deviceName"></strong> 장비를 삭제하시겠습니까?</p>
-            <p class="warning">이 작업은 되돌릴 수 없습니다.</p>
-        </div>
-        <div class="modal-footer">
-            <form id="deleteForm" method="POST" action="">
-                <button type="button" class="btn" id="cancelDelete">취소</button>
-                <button type="submit" class="btn danger">삭제</button>
-            </form>
-        </div>
+    <div class="modal-header">
+        <h3 class="modal-title">장비 삭제 확인</h3>
+        <button type="button" class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+        <p>정말 <strong id="deviceName"></strong> 장비를 삭제하시겠습니까?</p>
+        <p class="warning">이 작업은 되돌릴 수 없습니다.</p>
+    </div>
+    <div class="modal-footer">
+        <form id="deleteForm" method="POST" action="">
+            <button type="button" class="btn" id="cancelDelete">취소</button>
+            <button type="submit" class="btn danger">삭제</button>
+        </form>
     </div>
 </div>
 
 <!-- 엑셀 업로드 모달 -->
 <div id="uploadModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>엑셀 파일 업로드</h3>
-            <span class="close">&times;</span>
-        </div>
-        <div class="modal-body">
-            <p>장비 정보가 포함된 엑셀 파일을 업로드하세요.</p>
-            <p>필수 컬럼: name, category, ip_address, username, password</p>
-            <p>선택 컬럼: manufacturer, model, version, port</p>
-            <form id="uploadForm" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label for="excelFile">엑셀 파일 선택</label>
-                    <input type="file" id="excelFile" name="file" accept=".xlsx, .xls" required>
-                </div>
-            </form>
-            <div id="uploadResult" class="mt-3" style="display: none;">
-                <h4>업로드 결과</h4>
-                <p id="resultMessage"></p>
-                <div id="errorList" class="error-list" style="display: none;">
-                    <h5>오류 목록</h5>
-                    <ul></ul>
-                </div>
+    <div class="modal-header">
+        <h3 class="modal-title">엑셀 파일 업로드</h3>
+        <button type="button" class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+        <p>장비 정보가 포함된 엑셀 파일을 업로드하세요.</p>
+        <p>필수 컬럼: name, category, ip_address, username, password</p>
+        <p>선택 컬럼: manufacturer, model, version, port</p>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="excelFile">엑셀 파일 선택</label>
+                <input type="file" id="excelFile" name="file" accept=".xlsx, .xls" required>
+            </div>
+        </form>
+        <div id="uploadResult" class="mt-3" style="display: none;">
+            <h4>업로드 결과</h4>
+            <p id="resultMessage"></p>
+            <div id="errorList" class="error-list" style="display: none;">
+                <h5>오류 목록</h5>
+                <ul></ul>
             </div>
         </div>
-        <div class="modal-footer">
-            <button type="button" class="btn" id="cancelUpload">취소</button>
-            <button type="button" class="btn primary" id="submitUpload">업로드</button>
-        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn" id="cancelUpload">취소</button>
+        <button type="button" class="btn primary" id="submitUpload">업로드</button>
     </div>
 </div>
 {% endblock %} 

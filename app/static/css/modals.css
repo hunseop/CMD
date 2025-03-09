@@ -1,77 +1,124 @@
 /* 모달 스타일 */
 .modal {
-    display: none;
     position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
     z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    animation: fadeIn 0.3s;
+    opacity: 0;
+    visibility: hidden;
+    transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s;
 }
 
-.modal-content {
-    background-color: white;
-    margin: 10% auto;
-    padding: 0;
-    width: 500px;
-    max-width: 90%;
-    border-radius: 4px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    animation: slideIn 0.3s;
+.modal.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
 }
 
 .modal-header {
     padding: 15px 20px;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--border-color);
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
 }
 
-.modal-header h3 {
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
     margin: 0;
-    color: #2c3e50;
 }
 
-.close {
-    color: #aaa;
-    font-size: 28px;
-    font-weight: bold;
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 20px;
     cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
 }
 
-.close:hover {
-    color: #333;
+.modal-close:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--text-color);
 }
 
 .modal-body {
     padding: 20px;
+    color: var(--text-color);
+}
+
+.modal-body p {
+    margin-bottom: 15px;
+}
+
+.modal-body .form-group:last-child {
+    margin-bottom: 0;
 }
 
 .modal-footer {
     padding: 15px 20px;
-    border-top: 1px solid #e9ecef;
+    border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: flex-end;
-}
-
-.modal-footer .btn {
-    margin-left: 10px;
+    gap: 10px;
 }
 
 .warning {
-    color: #e74c3c;
+    color: var(--danger-color);
     font-weight: 500;
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: rgba(220, 53, 69, 0.05);
+    border-radius: 6px;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+.warning i {
+    margin-right: 8px;
 }
 
-@keyframes slideIn {
-    from { transform: translateY(-50px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+/* 모달 오버레이 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+    backdrop-filter: blur(3px);
+}
+
+.modal-overlay.active {
+    display: block;
+}
+
+/* 모달 반응형 */
+@media (max-width: 576px) {
+    .modal {
+        width: 95%;
+    }
+    
+    .modal-header, .modal-body, .modal-footer {
+        padding: 15px;
+    }
 } 
