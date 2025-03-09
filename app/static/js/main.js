@@ -94,29 +94,4 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.AlertsModule) {
         window.AlertsModule.initAutoHideAlerts();
     }
-    
-    // 현재 페이지에 따라 초기화 함수 호출
-    const currentPath = window.location.pathname;
-    
-    if (currentPath.startsWith('/devices')) {
-        // 장비 관리 페이지
-        if (document.querySelector('.devices-container')) {
-            initDevicesPage();
-        }
-    } else if (currentPath.startsWith('/policies')) {
-        // 정책 관리 페이지 (향후 구현)
-    } else if (currentPath.startsWith('/analysis')) {
-        // 분석 페이지 (향후 구현)
-    } else if (currentPath.startsWith('/scenarios')) {
-        // 시나리오 페이지 (향후 구현)
-    } else if (currentPath === '/' || currentPath === '/dashboard') {
-        // 대시보드 페이지 (향후 구현)
-    }
-});
-
-// 페이지별 초기화 함수는 각 페이지 JS 파일에서 가져옴
-function initDevicesPage() {
-    if (typeof window.initDevicesPage === 'function') {
-        window.initDevicesPage();
-    }
-} 
+}); 

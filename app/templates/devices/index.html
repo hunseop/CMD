@@ -12,8 +12,8 @@
         <h2>장비 관리</h2>
         <div class="actions">
             <a href="{{ url_for('devices.create') }}" class="btn primary">장비 추가</a>
-            <button class="btn">엑셀 업로드</button>
-            <button class="btn">엑셀 다운로드</button>
+            <button class="btn" id="uploadExcelBtn">엑셀 업로드</button>
+            <a href="{{ url_for('devices.download_excel_template') }}" class="btn">엑셀 템플릿</a>
         </div>
     </div>
     
@@ -89,4 +89,36 @@
     </div>
 </div>
 
+<!-- 엑셀 업로드 모달 -->
+<div id="uploadModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>엑셀 파일 업로드</h3>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>장비 정보가 포함된 엑셀 파일을 업로드하세요.</p>
+            <p>필수 컬럼: name, category, ip_address, username, password</p>
+            <p>선택 컬럼: manufacturer, model, version, port</p>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="excelFile">엑셀 파일 선택</label>
+                    <input type="file" id="excelFile" name="file" accept=".xlsx, .xls" required>
+                </div>
+            </form>
+            <div id="uploadResult" class="mt-3" style="display: none;">
+                <h4>업로드 결과</h4>
+                <p id="resultMessage"></p>
+                <div id="errorList" class="error-list" style="display: none;">
+                    <h5>오류 목록</h5>
+                    <ul></ul>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn" id="cancelUpload">취소</button>
+            <button type="button" class="btn primary" id="submitUpload">업로드</button>
+        </div>
+    </div>
+</div>
 {% endblock %} 

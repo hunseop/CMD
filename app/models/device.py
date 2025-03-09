@@ -8,12 +8,12 @@ class Device(db.Model):
     # 기본 정보
     name = db.Column(db.String(100), nullable=False, comment='장비명')
     category = db.Column(db.String(20), nullable=False, comment='장비 분류(firewall, proxy, ips 등)')
-    manufacturer = db.Column(db.String(50), nullable=False, comment='제조사')
-    model = db.Column(db.String(50), nullable=False, comment='모델명')
-    version = db.Column(db.String(50), comment='버전 정보')
+    manufacturer = db.Column(db.String(50), nullable=True, comment='제조사')
+    model = db.Column(db.String(50), nullable=True, comment='모델명')
+    version = db.Column(db.String(50), nullable=True, comment='버전 정보')
     
     # 연결 정보
-    ip_address = db.Column(db.String(100), nullable=False, comment='IP 주소')
+    ip_address = db.Column(db.String(100), nullable=False, unique=True, comment='IP 주소')
     port = db.Column(db.Integer, default=443, comment='접속 포트')
     username = db.Column(db.String(100), nullable=False, comment='접속 계정')
     password = db.Column(db.String(200), nullable=False, comment='접속 비밀번호')
