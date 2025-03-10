@@ -22,4 +22,13 @@ def create_app():
     return app
 
 # 모델 임포트는 circular import를 피하기 위해 create_app 함수 정의 후에 작성
-from app.models import Device
+from app.models import (
+    Device,
+    FirewallSystemInfo,
+    FirewallPolicy,
+    FirewallNetworkObject,
+    FirewallNetworkGroup,
+    FirewallServiceObject,
+    FirewallServiceGroup,
+    SyncHistory
+)

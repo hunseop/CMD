@@ -4,3 +4,14 @@
 @import 'tables.css';
 @import 'forms.css';
 @import 'modals.css';
+
+/* 장비 이름 링크 스타일 */
+.device-name-link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.device-name-link:hover {
+    text-decoration: underline;
+}

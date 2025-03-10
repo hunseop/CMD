@@ -1,0 +1,597 @@
+{% extends "base.html" %}
+
+{% block title %}장비 상세 정보{% endblock %}
+
+{% block content %}
+<div class="device-detail-container">
+    <div class="page-header">
+        <h2>장비 상세 정보</h2>
+        <div class="actions">
+            <a href="{{ url_for('devices.index') }}" class="btn">목록으로</a>
+            <a href="{{ url_for('devices.edit', id=device.id) }}" class="btn primary">수정</a>
+            <button type="button" class="btn danger" onclick="confirmDelete()">삭제</button>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert {{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="device-info-section">
+        <h3>기본 정보</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="label">장비명</span>
+                <span class="value">{{ device.name }}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">분류</span>
+                <span class="value">{{ device.category }}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">세부 분류</span>
+                <span class="value">{{ device.sub_category }}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">제조사</span>
+                <span class="value">{{ device.manufacturer }}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">모델명</span>
+                <span class="value">{{ device.model }}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">버전</span>
+                <span class="value">{{ device.version }}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">IP 주소</span>
+                <span class="value">{{ device.ip_address }}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">포트</span>
+                <span class="value">{{ device.port }}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">접속 계정</span>
+                <span class="value">{{ device.username }}</span>
+            </div>
+        </div>
+    </div>
+
+    {% if device.category == 'firewall' %}
+    <div class="tabs">
+        <div class="tab-header">
+            <button class="tab-btn active" onclick="openTab(event, 'system-info')">시스템 정보</button>
+            <button class="tab-btn" onclick="openTab(event, 'policies')">정책</button>
+            <button class="tab-btn" onclick="openTab(event, 'network-objects')">네트워크 객체</button>
+            <button class="tab-btn" onclick="openTab(event, 'network-groups')">네트워크 그룹</button>
+            <button class="tab-btn" onclick="openTab(event, 'service-objects')">서비스 객체</button>
+            <button class="tab-btn" onclick="openTab(event, 'service-groups')">서비스 그룹</button>
+            <button class="tab-btn" onclick="openTab(event, 'sync-history')">동기화 이력</button>
+        </div>
+
+        <div id="system-info" class="tab-content active">
+            <div class="tab-header-actions">
+                <form method="POST" action="{{ url_for('devices.sync_device', id=device.id) }}">
+                    <input type="hidden" name="sync_type" value="system_info">
+                    <button type="submit" class="btn primary">시스템 정보 동기화</button>
+                </form>
+            </div>
+            
+            {% if system_info %}
+            <div class="info-grid">
+                {% if system_info.hostname %}
+                <div class="info-item">
+                    <span class="label">호스트명</span>
+                    <span class="value">{{ system_info.hostname }}</span>
+                </div>
+                {% endif %}
+                
+                {% if system_info.model %}
+                <div class="info-item">
+                    <span class="label">모델명</span>
+                    <span class="value">{{ system_info.model }}</span>
+                </div>
+                {% endif %}
+                
+                {% if system_info.version %}
+                <div class="info-item">
+                    <span class="label">소프트웨어 버전</span>
+                    <span class="value">{{ system_info.version }}</span>
+                </div>
+                {% endif %}
+                
+                {% if system_info.uptime %}
+                <div class="info-item">
+                    <span class="label">가동 시간</span>
+                    <span class="value">{{ system_info.uptime }}</span>
+                </div>
+                {% endif %}
+                
+                {% if system_info.ip_address %}
+                <div class="info-item">
+                    <span class="label">IP 주소</span>
+                    <span class="value">{{ system_info.ip_address }}</span>
+                </div>
+                {% endif %}
+                
+                {% if system_info.mac_address %}
+                <div class="info-item">
+                    <span class="label">MAC 주소</span>
+                    <span class="value">{{ system_info.mac_address }}</span>
+                </div>
+                {% endif %}
+                
+                {% if system_info.serial_number %}
+                <div class="info-item">
+                    <span class="label">시리얼 번호</span>
+                    <span class="value">{{ system_info.serial_number }}</span>
+                </div>
+                {% endif %}
+                
+                {% if system_info.app_version %}
+                <div class="info-item">
+                    <span class="label">앱 버전</span>
+                    <span class="value">{{ system_info.app_version }}</span>
+                </div>
+                {% endif %}
+                
+                {% if system_info.status %}
+                <div class="info-item">
+                    <span class="label">상태</span>
+                    <span class="value">{{ system_info.status }}</span>
+                </div>
+                {% endif %}
+                
+                {% if system_info.last_sync_at %}
+                <div class="info-item">
+                    <span class="label">마지막 동기화</span>
+                    <span class="value">{{ system_info.last_sync_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>시스템 정보가 없습니다. 동기화를 실행해주세요.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div id="policies" class="tab-content">
+            <div class="tab-header-actions">
+                <form method="POST" action="{{ url_for('devices.sync_device', id=device.id) }}">
+                    <input type="hidden" name="sync_type" value="policies">
+                    <button type="submit" class="btn primary">정책 동기화</button>
+                </form>
+            </div>
+            
+            {% if policies %}
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>순서</th>
+                            <th>이름</th>
+                            <th>활성화</th>
+                            <th>동작</th>
+                            <th>출발지</th>
+                            <th>목적지</th>
+                            <th>서비스</th>
+                            <th>마지막 사용</th>
+                            <th>미사용 일수</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for policy in policies %}
+                        <tr>
+                            <td>{{ policy.seq }}</td>
+                            <td>{{ policy.rule_name }}</td>
+                            <td>{{ policy.enable }}</td>
+                            <td>{{ policy.action }}</td>
+                            <td>{{ policy.source }}</td>
+                            <td>{{ policy.destination }}</td>
+                            <td>{{ policy.service }}</td>
+                            <td>{{ policy.last_hit_date }}</td>
+                            <td>{{ policy.unused_days }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>정책 정보가 없습니다. 동기화를 실행해주세요.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div id="network-objects" class="tab-content">
+            <div class="tab-header-actions">
+                <form method="POST" action="{{ url_for('devices.sync_device', id=device.id) }}">
+                    <input type="hidden" name="sync_type" value="network_objects">
+                    <button type="submit" class="btn primary">네트워크 객체 동기화</button>
+                </form>
+            </div>
+            
+            {% if network_objects %}
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>이름</th>
+                            <th>타입</th>
+                            <th>값</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for obj in network_objects %}
+                        <tr>
+                            <td>{{ obj.name }}</td>
+                            <td>{{ obj.type }}</td>
+                            <td>{{ obj.value }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>네트워크 객체가 없습니다. 동기화를 실행해주세요.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div id="network-groups" class="tab-content">
+            <div class="tab-header-actions">
+                <form method="POST" action="{{ url_for('devices.sync_device', id=device.id) }}">
+                    <input type="hidden" name="sync_type" value="network_groups">
+                    <button type="submit" class="btn primary">네트워크 그룹 동기화</button>
+                </form>
+            </div>
+            
+            {% if network_groups %}
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>그룹명</th>
+                            <th>멤버</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for group in network_groups %}
+                        <tr>
+                            <td>{{ group.group_name }}</td>
+                            <td>{{ group.entry }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>네트워크 그룹이 없습니다. 동기화를 실행해주세요.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div id="service-objects" class="tab-content">
+            <div class="tab-header-actions">
+                <form method="POST" action="{{ url_for('devices.sync_device', id=device.id) }}">
+                    <input type="hidden" name="sync_type" value="service_objects">
+                    <button type="submit" class="btn primary">서비스 객체 동기화</button>
+                </form>
+            </div>
+            
+            {% if service_objects %}
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>이름</th>
+                            <th>프로토콜</th>
+                            <th>포트</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for obj in service_objects %}
+                        <tr>
+                            <td>{{ obj.name }}</td>
+                            <td>{{ obj.protocol }}</td>
+                            <td>{{ obj.port }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>서비스 객체가 없습니다. 동기화를 실행해주세요.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div id="service-groups" class="tab-content">
+            <div class="tab-header-actions">
+                <form method="POST" action="{{ url_for('devices.sync_device', id=device.id) }}">
+                    <input type="hidden" name="sync_type" value="service_groups">
+                    <button type="submit" class="btn primary">서비스 그룹 동기화</button>
+                </form>
+            </div>
+            
+            {% if service_groups %}
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>그룹명</th>
+                            <th>멤버</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for group in service_groups %}
+                        <tr>
+                            <td>{{ group.group_name }}</td>
+                            <td>{{ group.entry }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>서비스 그룹이 없습니다. 동기화를 실행해주세요.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div id="sync-history" class="tab-content">
+            <div class="tab-header-actions">
+                <form method="POST" action="{{ url_for('devices.sync_device', id=device.id) }}">
+                    <input type="hidden" name="sync_type" value="all">
+                    <button type="submit" class="btn primary">모든 정보 동기화</button>
+                </form>
+            </div>
+            
+            {% if sync_histories %}
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>동기화 유형</th>
+                            <th>상태</th>
+                            <th>메시지</th>
+                            <th>일시</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for history in sync_histories %}
+                        <tr>
+                            <td>{{ history.sync_type }}</td>
+                            <td>{{ history.status }}</td>
+                            <td>{{ history.message }}</td>
+                            <td>{{ history.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>동기화 이력이 없습니다.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<form id="delete-form" method="POST" action="{{ url_for('devices.delete', id=device.id) }}" style="display: none;"></form>
+
+<script>
+function confirmDelete() {
+    if (confirm('정말로 이 장비를 삭제하시겠습니까?')) {
+        document.getElementById('delete-form').submit();
+    }
+}
+
+function openTab(evt, tabName) {
+    var i, tabContent, tabButtons;
+    
+    // 모든 탭 내용 숨기기
+    tabContent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabContent.length; i++) {
+        tabContent[i].classList.remove("active");
+    }
+    
+    // 모든 탭 버튼에서 active 클래스 제거
+    tabButtons = document.getElementsByClassName("tab-btn");
+    for (i = 0; i < tabButtons.length; i++) {
+        tabButtons[i].classList.remove("active");
+    }
+    
+    // 선택한 탭 내용 표시 및 버튼 활성화
+    document.getElementById(tabName).classList.add("active");
+    evt.currentTarget.classList.add("active");
+}
+</script>
+
+<style>
+.device-detail-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+}
+
+.device-info-section {
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.label {
+    font-weight: bold;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.value {
+    font-size: 16px;
+}
+
+.tabs {
+    margin-top: 30px;
+}
+
+.tab-header {
+    display: flex;
+    overflow-x: auto;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    padding: 10px 15px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    border-bottom: 2px solid transparent;
+}
+
+.tab-btn.active {
+    color: #007bff;
+    border-bottom: 2px solid #007bff;
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.tab-header-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 15px;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th, .data-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.data-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.data-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+.empty-state {
+    padding: 30px;
+    text-align: center;
+    color: #666;
+}
+
+.alert {
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.alert.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.alert.warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-block;
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.btn.primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn.danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+</style>
+{% endblock %} 

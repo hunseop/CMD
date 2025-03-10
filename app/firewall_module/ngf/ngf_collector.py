@@ -2,7 +2,7 @@
 import pandas as pd
 from typing import Optional
 from datetime import datetime, timedelta
-from firewall_module.firewall_interface import FirewallInterface
+from ..firewall_interface import FirewallInterface
 from .ngf_module import NGFClient
 
 class NGFCollector(FirewallInterface):

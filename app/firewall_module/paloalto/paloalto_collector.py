@@ -1,7 +1,7 @@
 # firewall/paloalto/paloalto_collector.py
 import pandas as pd
 from typing import Optional
-from firewall_module.firewall_interface import FirewallInterface
+from ..firewall_interface import FirewallInterface
 from .paloalto_module import PaloAltoAPI
 
 class PaloAltoCollector(FirewallInterface):

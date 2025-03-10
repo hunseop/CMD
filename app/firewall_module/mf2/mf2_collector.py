@@ -1,7 +1,7 @@
 # firewall/mf2/mf2_collector.py
 import pandas as pd
 from typing import Optional
-from firewall_module.firewall_interface import FirewallInterface
+from ..firewall_interface import FirewallInterface
 from .mf2_module import show_system_info, export_security_rules, download_object_files, host_parsing, network_parsing, combine_mask_end, delete_files, export_address_objects, service_parsing
 import os
 

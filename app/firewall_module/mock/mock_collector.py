@@ -1,4 +1,4 @@
-from firewall_module.firewall_interface import FirewallInterface
+from ..firewall_interface import FirewallInterface
 from .mock_module import MockFirewall
 import pandas as pd
 

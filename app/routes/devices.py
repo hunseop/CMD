@@ -1,10 +1,20 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from app import db
-from app.models import Device
+from app.models import Device, FirewallPolicy, FirewallNetworkObject, FirewallNetworkGroup, FirewallServiceObject, FirewallServiceGroup, SyncHistory
 import pandas as pd
 import os
 from werkzeug.utils import secure_filename
 import tempfile
+from app.services.firewall_sync import (
+    sync_system_info,
+    sync_firewall_policies,
+    sync_network_objects,
+    sync_network_groups,
+    sync_service_objects,
+    sync_service_groups,
+    sync_usage_logs,
+    sync_all
+)
 
 devices_bp = Blueprint('devices', __name__, url_prefix='/devices')
 
@@ -235,4 +245,98 @@ def download_excel_template():
     
     except Exception as e:
         flash(f'템플릿 다운로드 중 오류가 발생했습니다: {str(e)}', 'error')
-        return redirect(url_for('devices.index')) 
+        return redirect(url_for('devices.index'))
+
+@devices_bp.route('/<int:id>/sync', methods=['POST'])
+def sync_device(id):
+    """장비 정보 동기화"""
+    device = Device.query.get_or_404(id)
+    
+    sync_type = request.form.get('sync_type', 'all')
+    
+    if sync_type == 'all':
+        success, results = sync_all(device.id)
+        if success:
+            flash('모든 정보가 성공적으로 동기화되었습니다.', 'success')
+        else:
+            flash('일부 정보 동기화 중 오류가 발생했습니다.', 'warning')
+    elif sync_type == 'system_info':
+        success, message = sync_system_info(device.id)
+        if success:
+            flash('시스템 정보가 성공적으로 동기화되었습니다.', 'success')
+        else:
+            flash(f'시스템 정보 동기화 중 오류가 발생했습니다: {message}', 'error')
+    elif sync_type == 'policies':
+        success, message = sync_firewall_policies(device.id)
+        if success:
+            flash('정책 정보가 성공적으로 동기화되었습니다.', 'success')
+        else:
+            flash(f'정책 정보 동기화 중 오류가 발생했습니다: {message}', 'error')
+    elif sync_type == 'network_objects':
+        success, message = sync_network_objects(device.id)
+        if success:
+            flash('네트워크 객체가 성공적으로 동기화되었습니다.', 'success')
+        else:
+            flash(f'네트워크 객체 동기화 중 오류가 발생했습니다: {message}', 'error')
+    elif sync_type == 'network_groups':
+        success, message = sync_network_groups(device.id)
+        if success:
+            flash('네트워크 그룹이 성공적으로 동기화되었습니다.', 'success')
+        else:
+            flash(f'네트워크 그룹 동기화 중 오류가 발생했습니다: {message}', 'error')
+    elif sync_type == 'service_objects':
+        success, message = sync_service_objects(device.id)
+        if success:
+            flash('서비스 객체가 성공적으로 동기화되었습니다.', 'success')
+        else:
+            flash(f'서비스 객체 동기화 중 오류가 발생했습니다: {message}', 'error')
+    elif sync_type == 'service_groups':
+        success, message = sync_service_groups(device.id)
+        if success:
+            flash('서비스 그룹이 성공적으로 동기화되었습니다.', 'success')
+        else:
+            flash(f'서비스 그룹 동기화 중 오류가 발생했습니다: {message}', 'error')
+    elif sync_type == 'usage_logs':
+        days = request.form.get('days', 30, type=int)
+        success, message = sync_usage_logs(device.id, days=days)
+        if success:
+            flash('사용 이력이 성공적으로 동기화되었습니다.', 'success')
+        else:
+            flash(f'사용 이력 동기화 중 오류가 발생했습니다: {message}', 'error')
+    else:
+        flash('유효하지 않은 동기화 유형입니다.', 'error')
+    
+    return redirect(url_for('devices.detail', id=device.id))
+
+@devices_bp.route('/<int:id>/detail')
+def detail(id):
+    """장비 상세 정보 조회"""
+    device = Device.query.get_or_404(id)
+    
+    # 방화벽 정보 조회
+    system_info = None
+    policies = []
+    network_objects = []
+    network_groups = []
+    service_objects = []
+    service_groups = []
+    sync_histories = []
+    
+    if device.category == 'firewall':
+        system_info = device.system_info
+        policies = FirewallPolicy.query.filter_by(device_id=device.id).all()
+        network_objects = FirewallNetworkObject.query.filter_by(device_id=device.id).all()
+        network_groups = FirewallNetworkGroup.query.filter_by(device_id=device.id).all()
+        service_objects = FirewallServiceObject.query.filter_by(device_id=device.id).all()
+        service_groups = FirewallServiceGroup.query.filter_by(device_id=device.id).all()
+        sync_histories = SyncHistory.query.filter_by(device_id=device.id).order_by(SyncHistory.created_at.desc()).limit(10).all()
+    
+    return render_template('devices/detail.html', 
+                          device=device,
+                          system_info=system_info,
+                          policies=policies,
+                          network_objects=network_objects,
+                          network_groups=network_groups,
+                          service_objects=service_objects,
+                          service_groups=service_groups,
+                          sync_histories=sync_histories) 

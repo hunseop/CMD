@@ -49,4 +49,26 @@ class Device(db.Model):
     @property
     def connection_string(self):
         """접속 문자열 반환"""
-        return f'{self.ip_address}:{self.port}' 
+        return f'{self.ip_address}:{self.port}'
+    
+    def get_connection_config(self):
+        """장비 타입에 맞는 연결 설정 반환"""
+        if self.sub_category == 'paloalto' or self.sub_category == 'mock':
+            return {
+                'hostname': self.ip_address,
+                'username': self.username,
+                'password': self.password
+            }
+        elif self.sub_category == 'mf2':
+            return {
+                'device_ip': self.ip_address,
+                'username': self.username,
+                'password': self.password
+            }
+        elif self.sub_category == 'ngf':
+            return {
+                'hostname': self.ip_address,
+                'ext_clnt_id': self.username,  # NGF는 username을 ext_clnt_id로 사용
+                'ext_clnt_secret': self.password  # NGF는 password를 ext_clnt_secret로 사용
+            }
+        return None 

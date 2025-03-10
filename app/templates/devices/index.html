@@ -37,12 +37,13 @@
                 {% if devices %}
                     {% for device in devices %}
                     <tr>
-                        <td>{{ device.name }}</td>
+                        <td><a href="{{ url_for('devices.detail', id=device.id) }}" class="device-name-link">{{ device.name }}</a></td>
                         <td>{{ device.category }}</td>
                         <td>{{ device.manufacturer }}</td>
                         <td>{{ device.model }}</td>
                         <td>{{ device.connection_string }}</td>
                         <td class="actions">
+                            <a href="{{ url_for('devices.detail', id=device.id) }}" class="btn small">상세</a>
                             <a href="{{ url_for('devices.edit', id=device.id) }}" class="btn small">수정</a>
                             <button class="btn small danger delete-btn" data-id="{{ device.id }}" data-name="{{ device.name }}">삭제</button>
                         </td>
