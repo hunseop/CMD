@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from app import db
-from app.models import Device, FirewallPolicy, FirewallNetworkObject, FirewallNetworkGroup, FirewallServiceObject, FirewallServiceGroup, SyncHistory
+from app.models import Device, FirewallPolicy, FirewallNetworkObject, FirewallNetworkGroup, FirewallServiceObject, FirewallServiceGroup, SyncHistory, FirewallSystemInfo
 import pandas as pd
 import os
 from werkzeug.utils import secure_filename
@@ -22,7 +22,27 @@ devices_bp = Blueprint('devices', __name__, url_prefix='/devices')
 def index():
     """장비 목록 조회"""
     devices = Device.query.all()
-    return render_template('devices/index.html', devices=devices)
+    
+    # 각 장비별 마지막 동기화 정보 조회
+    sync_info = {}
+    for device in devices:
+        if device.category == 'firewall':
+            # 시스템 정보 동기화 여부
+            system_info = FirewallSystemInfo.query.filter_by(device_id=device.id).first()
+            
+            # 마지막 동기화 이력
+            last_sync = SyncHistory.query.filter_by(device_id=device.id).order_by(SyncHistory.created_at.desc()).first()
+            
+            # 정책 수
+            policy_count = FirewallPolicy.query.filter_by(device_id=device.id).count()
+            
+            sync_info[device.id] = {
+                'system_info': system_info,
+                'last_sync': last_sync,
+                'policy_count': policy_count
+            }
+    
+    return render_template('devices/index.html', devices=devices, sync_info=sync_info)
 
 @devices_bp.route('/create', methods=['GET', 'POST'])
 def create():
@@ -252,61 +272,83 @@ def sync_device(id):
     """장비 정보 동기화"""
     device = Device.query.get_or_404(id)
     
-    sync_type = request.form.get('sync_type', 'all')
+    # 동기화 유형 (여러 항목 선택 가능)
+    sync_types = request.form.getlist('sync_type')
     
-    if sync_type == 'all':
-        success, results = sync_all(device.id)
-        if success:
-            flash('모든 정보가 성공적으로 동기화되었습니다.', 'success')
-        else:
-            flash('일부 정보 동기화 중 오류가 발생했습니다.', 'warning')
-    elif sync_type == 'system_info':
-        success, message = sync_system_info(device.id)
-        if success:
-            flash('시스템 정보가 성공적으로 동기화되었습니다.', 'success')
-        else:
-            flash(f'시스템 정보 동기화 중 오류가 발생했습니다: {message}', 'error')
-    elif sync_type == 'policies':
-        success, message = sync_firewall_policies(device.id)
-        if success:
-            flash('정책 정보가 성공적으로 동기화되었습니다.', 'success')
-        else:
-            flash(f'정책 정보 동기화 중 오류가 발생했습니다: {message}', 'error')
-    elif sync_type == 'network_objects':
-        success, message = sync_network_objects(device.id)
-        if success:
-            flash('네트워크 객체가 성공적으로 동기화되었습니다.', 'success')
-        else:
-            flash(f'네트워크 객체 동기화 중 오류가 발생했습니다: {message}', 'error')
-    elif sync_type == 'network_groups':
-        success, message = sync_network_groups(device.id)
-        if success:
-            flash('네트워크 그룹이 성공적으로 동기화되었습니다.', 'success')
-        else:
-            flash(f'네트워크 그룹 동기화 중 오류가 발생했습니다: {message}', 'error')
-    elif sync_type == 'service_objects':
-        success, message = sync_service_objects(device.id)
-        if success:
-            flash('서비스 객체가 성공적으로 동기화되었습니다.', 'success')
-        else:
-            flash(f'서비스 객체 동기화 중 오류가 발생했습니다: {message}', 'error')
-    elif sync_type == 'service_groups':
-        success, message = sync_service_groups(device.id)
-        if success:
-            flash('서비스 그룹이 성공적으로 동기화되었습니다.', 'success')
-        else:
-            flash(f'서비스 그룹 동기화 중 오류가 발생했습니다: {message}', 'error')
-    elif sync_type == 'usage_logs':
-        days = request.form.get('days', 30, type=int)
-        success, message = sync_usage_logs(device.id, days=days)
-        if success:
-            flash('사용 이력이 성공적으로 동기화되었습니다.', 'success')
-        else:
-            flash(f'사용 이력 동기화 중 오류가 발생했습니다: {message}', 'error')
+    # 결과 저장
+    results = {}
+    all_success = True
+    
+    # 모든 항목 동기화 요청인 경우
+    if 'all' in sync_types:
+        success, message = sync_all(device.id)
+        results['all'] = {'success': success, 'message': message}
+        all_success = all_success and success
     else:
-        flash('유효하지 않은 동기화 유형입니다.', 'error')
+        # 선택된 항목만 동기화
+        for sync_type in sync_types:
+            if sync_type == 'system_info':
+                success, message = sync_system_info(device.id)
+                results['system_info'] = {'success': success, 'message': message}
+                all_success = all_success and success
+            
+            elif sync_type == 'policies':
+                success, message = sync_firewall_policies(device.id)
+                results['policies'] = {'success': success, 'message': message}
+                all_success = all_success and success
+            
+            elif sync_type == 'network_objects':
+                success, message = sync_network_objects(device.id)
+                results['network_objects'] = {'success': success, 'message': message}
+                all_success = all_success and success
+            
+            elif sync_type == 'network_groups':
+                success, message = sync_network_groups(device.id)
+                results['network_groups'] = {'success': success, 'message': message}
+                all_success = all_success and success
+            
+            elif sync_type == 'service_objects':
+                success, message = sync_service_objects(device.id)
+                results['service_objects'] = {'success': success, 'message': message}
+                all_success = all_success and success
+            
+            elif sync_type == 'service_groups':
+                success, message = sync_service_groups(device.id)
+                results['service_groups'] = {'success': success, 'message': message}
+                all_success = all_success and success
+            
+            elif sync_type == 'usage_logs':
+                days = request.form.get('days', 30, type=int)
+                success, message = sync_usage_logs(device.id, days=days)
+                results['usage_logs'] = {'success': success, 'message': message}
+                all_success = all_success and success
     
-    return redirect(url_for('devices.detail', id=device.id))
+    # 결과 메시지 생성
+    if not sync_types:
+        message = "동기화할 항목을 선택해주세요."
+        success = False
+    elif all_success:
+        message = "선택한 항목이 성공적으로 동기화되었습니다."
+        success = True
+    else:
+        message = "일부 항목 동기화 중 오류가 발생했습니다."
+        success = False
+    
+    # AJAX 요청인 경우 JSON 응답 반환
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.content_type == 'application/json':
+        return jsonify({
+            'success': success,
+            'message': message,
+            'results': results
+        })
+    
+    # 일반 요청인 경우 리다이렉트
+    if success:
+        flash(message, 'success')
+    else:
+        flash(message, 'error')
+    
+    return redirect(url_for('devices.index'))
 
 @devices_bp.route('/<int:id>/detail')
 def detail(id):
@@ -315,28 +357,13 @@ def detail(id):
     
     # 방화벽 정보 조회
     system_info = None
-    policies = []
-    network_objects = []
-    network_groups = []
-    service_objects = []
-    service_groups = []
     sync_histories = []
     
     if device.category == 'firewall':
         system_info = device.system_info
-        policies = FirewallPolicy.query.filter_by(device_id=device.id).all()
-        network_objects = FirewallNetworkObject.query.filter_by(device_id=device.id).all()
-        network_groups = FirewallNetworkGroup.query.filter_by(device_id=device.id).all()
-        service_objects = FirewallServiceObject.query.filter_by(device_id=device.id).all()
-        service_groups = FirewallServiceGroup.query.filter_by(device_id=device.id).all()
         sync_histories = SyncHistory.query.filter_by(device_id=device.id).order_by(SyncHistory.created_at.desc()).limit(10).all()
     
     return render_template('devices/detail.html', 
                           device=device,
                           system_info=system_info,
-                          policies=policies,
-                          network_objects=network_objects,
-                          network_groups=network_groups,
-                          service_objects=service_objects,
-                          service_groups=service_groups,
                           sync_histories=sync_histories) 

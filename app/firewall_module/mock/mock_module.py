@@ -50,9 +50,9 @@ class MockFirewall:
             'Application': [', '.join(random.sample(applications, random.randint(1, 3))) for _ in range(rule_count)],
             'Description': [f"자동 생성된 규칙 설명 {i}" for i in range(rule_count)],
             'Last Hit Date': [
-                datetime.now(UTC) - timedelta(days=random.randint(0, 90), 
+                (datetime.now(UTC) - timedelta(days=random.randint(0, 90), 
                                            hours=random.randint(0, 23),
-                                           minutes=random.randint(0, 59))
+                                           minutes=random.randint(0, 59))).strftime('%Y-%m-%d %H:%M:%S')
                 for _ in range(rule_count)
             ]
         })

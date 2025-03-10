@@ -392,10 +392,10 @@ def sync_usage_logs(device_id, days=30):
             ).first()
             
             if policy:
-                # 사용 이력 업데이트
-                policy.last_hit_date = row.get('Last Hit Date')
-                policy.unused_days = row.get('Unused Days')
-                policy.usage_status = row.get('미사용여부')
+                # 사용 이력 업데이트 (문자열로 저장)
+                policy.last_hit_date = str(row.get('Last Hit Date')) if row.get('Last Hit Date') else None
+                policy.unused_days = int(row.get('Unused Days')) if row.get('Unused Days') else None
+                policy.usage_status = str(row.get('미사용여부')) if row.get('미사용여부') else None
                 db.session.add(policy)
         
         # 동기화 이력 저장
