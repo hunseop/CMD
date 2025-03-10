@@ -1,8 +1,8 @@
-"""Initial migration
+"""Add sub_category field to Device model
 
-Revision ID: 1d8e2f5420ce
+Revision ID: c6c0c885bef6
 Revises: 
-Create Date: 2025-03-10 00:15:12.341792
+Create Date: 2025-03-10 13:30:32.178797
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '1d8e2f5420ce'
+revision = 'c6c0c885bef6'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -21,7 +21,8 @@ def upgrade():
     op.create_table('device',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=100), nullable=False, comment='장비명'),
-    sa.Column('category', sa.String(length=20), nullable=False, comment='장비 분류(firewall, proxy, ips 등)'),
+    sa.Column('category', sa.String(length=20), nullable=False, comment='장비 분류(firewall)'),
+    sa.Column('sub_category', sa.String(length=20), nullable=False, comment='세부 분류(paloalto, mf2, ngf, mock)'),
     sa.Column('manufacturer', sa.String(length=50), nullable=True, comment='제조사'),
     sa.Column('model', sa.String(length=50), nullable=True, comment='모델명'),
     sa.Column('version', sa.String(length=50), nullable=True, comment='버전 정보'),
@@ -31,7 +32,8 @@ def upgrade():
     sa.Column('password', sa.String(length=200), nullable=False, comment='접속 비밀번호'),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('ip_address')
     )
     # ### end Alembic commands ###
 

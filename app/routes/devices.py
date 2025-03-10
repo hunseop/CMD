@@ -22,6 +22,7 @@ def create():
             device = Device(
                 name=request.form['name'],
                 category=request.form['category'],
+                sub_category=request.form['sub_category'],
                 manufacturer=request.form['manufacturer'],
                 model=request.form['model'],
                 version=request.form['version'],
@@ -34,6 +35,9 @@ def create():
             db.session.commit()
             flash('장비가 성공적으로 등록되었습니다.', 'success')
             return redirect(url_for('devices.index'))
+        except ValueError as e:
+            flash(f'입력 값 오류: {str(e)}', 'error')
+            db.session.rollback()
         except Exception as e:
             flash('장비 등록 중 오류가 발생했습니다.', 'error')
             db.session.rollback()
@@ -47,6 +51,7 @@ def edit(id):
         try:
             device.name = request.form['name']
             device.category = request.form['category']
+            device.sub_category = request.form['sub_category']
             device.manufacturer = request.form['manufacturer']
             device.model = request.form['model']
             device.version = request.form['version']
@@ -58,6 +63,9 @@ def edit(id):
             db.session.commit()
             flash('장비 정보가 수정되었습니다.', 'success')
             return redirect(url_for('devices.index'))
+        except ValueError as e:
+            flash(f'입력 값 오류: {str(e)}', 'error')
+            db.session.rollback()
         except Exception as e:
             flash('장비 정보 수정 중 오류가 발생했습니다.', 'error')
             db.session.rollback()
@@ -110,7 +118,7 @@ def upload_excel():
             return jsonify({'success': False, 'message': f'엑셀 파일을 읽을 수 없습니다: {str(e)}'}), 400
         
         # 필수 컬럼 확인
-        required_columns = ['name', 'category', 'ip_address', 'username', 'password']
+        required_columns = ['name', 'category', 'sub_category', 'ip_address', 'username', 'password']
         missing_columns = [col for col in required_columns if col not in df.columns]
         
         if missing_columns:
@@ -126,6 +134,14 @@ def upload_excel():
         
         for index, row in df.iterrows():
             try:
+                # 카테고리 검증
+                if row['category'] != 'firewall':
+                    raise ValueError("장비 분류는 'firewall'만 가능합니다.")
+                
+                # 세부 분류 검증
+                if row['sub_category'] not in ['paloalto', 'mf2', 'ngf', 'mock']:
+                    raise ValueError("세부 분류는 'paloalto', 'mf2', 'ngf', 'mock' 중 하나여야 합니다.")
+                
                 # 기존 장비 확인 (IP 주소로 중복 체크)
                 existing_device = Device.query.filter_by(ip_address=row['ip_address']).first()
                 
@@ -133,6 +149,7 @@ def upload_excel():
                     # 기존 장비 업데이트
                     existing_device.name = row['name']
                     existing_device.category = row['category']
+                    existing_device.sub_category = row['sub_category']
                     existing_device.manufacturer = row.get('manufacturer', '')
                     existing_device.model = row.get('model', '')
                     existing_device.version = row.get('version', '')
@@ -144,6 +161,7 @@ def upload_excel():
                     device = Device(
                         name=row['name'],
                         category=row['category'],
+                        sub_category=row['sub_category'],
                         manufacturer=row.get('manufacturer', ''),
                         model=row.get('model', ''),
                         version=row.get('version', ''),
@@ -186,6 +204,7 @@ def download_excel_template():
         data = {
             'name': ['장비명 (필수)'],
             'category': ['firewall (필수)'],
+            'sub_category': ['paloalto, mf2, ngf, mock 중 선택 (필수)'],
             'manufacturer': ['제조사 (선택)'],
             'model': ['모델명 (선택)'],
             'version': ['버전 (선택)'],

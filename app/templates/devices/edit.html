@@ -27,12 +27,18 @@
         <div class="form-group">
             <label for="category">분류 <span class="required">*</span></label>
             <select id="category" name="category" required>
+                <option value="firewall" selected>방화벽</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="sub_category">세부 분류 <span class="required">*</span></label>
+            <select id="sub_category" name="sub_category" required>
                 <option value="">선택하세요</option>
-                <option value="firewall" {% if device.category == 'firewall' %}selected{% endif %}>방화벽</option>
-                <option value="proxy" {% if device.category == 'proxy' %}selected{% endif %}>프록시</option>
-                <option value="ips" {% if device.category == 'ips' %}selected{% endif %}>IPS</option>
-                <option value="waf" {% if device.category == 'waf' %}selected{% endif %}>WAF</option>
-                <option value="other" {% if device.category == 'other' %}selected{% endif %}>기타</option>
+                <option value="paloalto" {% if device.sub_category == 'paloalto' %}selected{% endif %}>PaloAlto</option>
+                <option value="mf2" {% if device.sub_category == 'mf2' %}selected{% endif %}>MF2</option>
+                <option value="ngf" {% if device.sub_category == 'ngf' %}selected{% endif %}>NGF</option>
+                <option value="mock" {% if device.sub_category == 'mock' %}selected{% endif %}>Mock(테스트)</option>
             </select>
         </div>
 

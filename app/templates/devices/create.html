@@ -27,12 +27,18 @@
         <div class="form-group">
             <label for="category">분류 <span class="required">*</span></label>
             <select id="category" name="category" required>
-                <option value="">선택하세요</option>
                 <option value="firewall">방화벽</option>
-                <option value="proxy">프록시</option>
-                <option value="ips">IPS</option>
-                <option value="waf">WAF</option>
-                <option value="other">기타</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="sub_category">세부 분류 <span class="required">*</span></label>
+            <select id="sub_category" name="sub_category" required>
+                <option value="">선택하세요</option>
+                <option value="paloalto">PaloAlto</option>
+                <option value="mf2">MF2</option>
+                <option value="ngf">NGF</option>
+                <option value="mock">Mock(테스트)</option>
             </select>
         </div>
 
