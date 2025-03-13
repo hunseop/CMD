@@ -147,36 +147,28 @@ function uploadExcelFile() {
 }
 
 /**
- * 탭 관리 초기화
+ * 탭 기능 초기화
  */
 function initTabs() {
     const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
     tabButtons.forEach(button => {
-        button.addEventListener('click', function(event) {
-            openTab(event, this.getAttribute('data-tab'));
+        button.addEventListener('click', () => {
+            // 활성 탭 버튼 변경
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            // 활성 탭 내용 변경
+            const tabId = button.getAttribute('data-tab');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+                if (content.id === tabId) {
+                    content.classList.add('active');
+                }
+            });
         });
     });
-}
-
-/**
- * 탭 열기
- */
-function openTab(event, tabName) {
-    // 모든 탭 내용 숨기기
-    const tabContents = document.getElementsByClassName('tab-content');
-    for (let content of tabContents) {
-        content.classList.remove('active');
-    }
-    
-    // 모든 탭 버튼에서 active 클래스 제거
-    const tabButtons = document.getElementsByClassName('tab-btn');
-    for (let button of tabButtons) {
-        button.classList.remove('active');
-    }
-    
-    // 선택한 탭 내용 표시 및 버튼 활성화
-    document.getElementById(tabName).classList.add('active');
-    event.currentTarget.classList.add('active');
 }
 
 /**
