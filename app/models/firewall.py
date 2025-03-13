@@ -23,7 +23,7 @@ class FirewallSystemInfo(db.Model):
     status = db.Column(db.String(100), nullable=True, comment='상태 (Mock)')
     
     # 동기화 정보
-    last_sync_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_sync_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
     def __repr__(self):
         return f'<FirewallSystemInfo for device_id={self.device_id}>'
@@ -60,7 +60,7 @@ class FirewallPolicy(db.Model):
     
     # 동기화 정보
     firewall_type = db.Column(db.String(20), nullable=False, comment='방화벽 타입(paloalto, mf2, ngf, mock)')
-    last_sync_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_sync_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
     def __repr__(self):
         return f'<FirewallPolicy {self.rule_name} for device_id={self.device_id}>'
@@ -78,7 +78,7 @@ class FirewallNetworkObject(db.Model):
     
     # 동기화 정보
     firewall_type = db.Column(db.String(20), nullable=False, comment='방화벽 타입(paloalto, mf2, ngf, mock)')
-    last_sync_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_sync_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
     def __repr__(self):
         return f'<FirewallNetworkObject {self.name} for device_id={self.device_id}>'
@@ -95,7 +95,7 @@ class FirewallNetworkGroup(db.Model):
     
     # 동기화 정보
     firewall_type = db.Column(db.String(20), nullable=False, comment='방화벽 타입(paloalto, mf2, ngf, mock)')
-    last_sync_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_sync_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
     def __repr__(self):
         return f'<FirewallNetworkGroup {self.group_name} for device_id={self.device_id}>'
@@ -113,7 +113,7 @@ class FirewallServiceObject(db.Model):
     
     # 동기화 정보
     firewall_type = db.Column(db.String(20), nullable=False, comment='방화벽 타입(paloalto, mf2, ngf, mock)')
-    last_sync_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_sync_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
     def __repr__(self):
         return f'<FirewallServiceObject {self.name} for device_id={self.device_id}>'
@@ -130,7 +130,7 @@ class FirewallServiceGroup(db.Model):
     
     # 동기화 정보
     firewall_type = db.Column(db.String(20), nullable=False, comment='방화벽 타입(paloalto, mf2, ngf, mock)')
-    last_sync_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_sync_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
     def __repr__(self):
         return f'<FirewallServiceGroup {self.group_name} for device_id={self.device_id}>'
@@ -144,7 +144,7 @@ class SyncHistory(db.Model):
     sync_type = db.Column(db.String(50), nullable=False, comment='동기화 유형(security_rules, network_objects 등)')
     status = db.Column(db.String(20), nullable=False, comment='상태(success, failed)')
     message = db.Column(db.Text, nullable=True, comment='결과 메시지')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
     
     def __repr__(self):
         return f'<SyncHistory {self.sync_type} for device_id={self.device_id} at {self.created_at}>' 

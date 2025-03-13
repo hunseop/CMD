@@ -27,8 +27,8 @@ class Device(db.Model):
     password = db.Column(db.String(200), nullable=False, comment='접속 비밀번호')
     
     # 생성/수정 시간
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
     @validates('category')
     def validate_category(self, key, category):
