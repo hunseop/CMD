@@ -129,15 +129,6 @@
     border-top: 1px solid var(--border-color);
 }
 
-/* 장비 관리 페이지 스타일 */
-.devices-container {
-    margin-bottom: 20px;
-}
-
-.devices-container .actions {
-    margin-bottom: 20px;
-}
-
 /* 업로드 결과 스타일 */
 .mt-3 {
     margin-top: 15px;
