@@ -187,6 +187,25 @@ function initSyncModal() {
     if (window.ModalModule) {
         const syncDeviceName = document.getElementById('syncDeviceName');
         const syncForm = document.getElementById('syncForm');
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const checkboxes = syncForm.querySelectorAll('input[name="sync_type"]');
+        
+        // 전체 선택/해제 이벤트
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+            });
+
+            // 개별 체크박스 변경 시 전체 선택 상태 업데이트
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    selectAllCheckbox.checked = Array.from(checkboxes)
+                        .every(cb => cb.checked);
+                });
+            });
+        }
         
         window.ModalModule.initModal('syncModal', {
             openSelector: '.sync-btn',
@@ -205,9 +224,7 @@ function initSyncModal() {
         // 동기화 버튼 이벤트
         const submitBtn = document.getElementById('submitSync');
         if (submitBtn) {
-            submitBtn.addEventListener('click', function() {
-                submitSyncForm();
-            });
+            submitBtn.addEventListener('click', submitSyncForm);
         }
     }
 }

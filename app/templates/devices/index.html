@@ -151,35 +151,40 @@
         <p><strong id="syncDeviceName"></strong> 장비의 정보를 동기화합니다.</p>
         <form id="syncForm" method="POST">
             <div class="form-group">
-                <label>동기화 항목 선택</label>
                 <div class="checkbox-group">
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="sync_system_info" name="sync_type" value="system_info" checked>
-                        <label for="sync_system_info">시스템 정보</label>
+                    <div class="group-header">
+                        <input type="checkbox" id="selectAll" checked>
+                        <h4 class="group-title">동기화 항목 선택</h4>
                     </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="sync_policies" name="sync_type" value="policies" checked>
-                        <label for="sync_policies">정책</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="sync_network_objects" name="sync_type" value="network_objects" checked>
-                        <label for="sync_network_objects">네트워크 객체</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="sync_network_groups" name="sync_type" value="network_groups" checked>
-                        <label for="sync_network_groups">네트워크 그룹</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="sync_service_objects" name="sync_type" value="service_objects" checked>
-                        <label for="sync_service_objects">서비스 객체</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="sync_service_groups" name="sync_type" value="service_groups" checked>
-                        <label for="sync_service_groups">서비스 그룹</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="sync_usage_logs" name="sync_type" value="usage_logs" checked>
-                        <label for="sync_usage_logs">사용 이력</label>
+                    <div class="group-content">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sync_system_info" name="sync_type" value="system_info" checked>
+                            <label for="sync_system_info">시스템 정보</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sync_policies" name="sync_type" value="policies" checked>
+                            <label for="sync_policies">정책</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sync_network_objects" name="sync_type" value="network_objects" checked>
+                            <label for="sync_network_objects">네트워크 객체</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sync_network_groups" name="sync_type" value="network_groups" checked>
+                            <label for="sync_network_groups">네트워크 그룹</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sync_service_objects" name="sync_type" value="service_objects" checked>
+                            <label for="sync_service_objects">서비스 객체</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sync_service_groups" name="sync_type" value="service_groups" checked>
+                            <label for="sync_service_groups">서비스 그룹</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sync_usage_logs" name="sync_type" value="usage_logs" checked>
+                            <label for="sync_usage_logs">사용 이력</label>
+                        </div>
                     </div>
                 </div>
             </div>
