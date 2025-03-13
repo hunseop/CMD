@@ -246,21 +246,35 @@ function submitSyncForm() {
         return;
     }
     
-    // 폼 데이터 생성
-    const formData = new FormData();
-    selectedTypes.forEach(type => formData.append('sync_types[]', type));
-    
     // 로딩 표시
     const submitBtn = document.getElementById('submitSync');
     submitBtn.disabled = true;
     submitBtn.textContent = '동기화 중...';
     
+    // FormData 생성
+    const formData = new FormData();
+    selectedTypes.forEach(type => {
+        formData.append('sync_type', type);
+    });
+    
     // AJAX 요청
     fetch(form.action, {
         method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'  // AJAX 요청임을 명시
+        },
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new TypeError("서버가 JSON을 반환하지 않았습니다!");
+        }
+        return response.json();
+    })
     .then(data => {
         resultDiv.style.display = 'block';
         resultMessage.textContent = data.message;
