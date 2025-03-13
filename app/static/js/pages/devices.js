@@ -146,10 +146,145 @@ function uploadExcelFile() {
     });
 }
 
+/**
+ * 탭 관리 초기화
+ */
+function initTabs() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function(event) {
+            openTab(event, this.getAttribute('data-tab'));
+        });
+    });
+}
+
+/**
+ * 탭 열기
+ */
+function openTab(event, tabName) {
+    // 모든 탭 내용 숨기기
+    const tabContents = document.getElementsByClassName('tab-content');
+    for (let content of tabContents) {
+        content.classList.remove('active');
+    }
+    
+    // 모든 탭 버튼에서 active 클래스 제거
+    const tabButtons = document.getElementsByClassName('tab-btn');
+    for (let button of tabButtons) {
+        button.classList.remove('active');
+    }
+    
+    // 선택한 탭 내용 표시 및 버튼 활성화
+    document.getElementById(tabName).classList.add('active');
+    event.currentTarget.classList.add('active');
+}
+
+/**
+ * 장비 삭제 확인
+ */
+function confirmDelete() {
+    if (confirm('정말로 이 장비를 삭제하시겠습니까?')) {
+        document.getElementById('delete-form').submit();
+    }
+}
+
+/**
+ * 동기화 모달 초기화
+ */
+function initSyncModal() {
+    if (window.ModalModule) {
+        const syncDeviceName = document.getElementById('syncDeviceName');
+        const syncForm = document.getElementById('syncForm');
+        
+        window.ModalModule.initModal('syncModal', {
+            openSelector: '.sync-btn',
+            cancelSelector: '#cancelSync',
+            onOpen: function(modal, button) {
+                if (button) {
+                    const deviceId = button.getAttribute('data-id');
+                    const deviceName = button.getAttribute('data-name');
+                    
+                    syncDeviceName.textContent = deviceName;
+                    syncForm.action = `/devices/${deviceId}/sync`;
+                }
+            }
+        });
+        
+        // 동기화 버튼 이벤트
+        const submitBtn = document.getElementById('submitSync');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', function() {
+                submitSyncForm();
+            });
+        }
+    }
+}
+
+/**
+ * 동기화 폼 제출
+ */
+function submitSyncForm() {
+    const form = document.getElementById('syncForm');
+    const resultDiv = document.getElementById('syncResult');
+    const resultMessage = document.getElementById('syncResultMessage');
+    
+    // 선택된 동기화 항목 확인
+    const selectedTypes = Array.from(form.querySelectorAll('input[name="sync_type"]:checked'))
+        .map(input => input.value);
+    
+    if (selectedTypes.length === 0) {
+        alert('동기화할 항목을 선택해주세요.');
+        return;
+    }
+    
+    // 폼 데이터 생성
+    const formData = new FormData();
+    selectedTypes.forEach(type => formData.append('sync_types[]', type));
+    
+    // 로딩 표시
+    const submitBtn = document.getElementById('submitSync');
+    submitBtn.disabled = true;
+    submitBtn.textContent = '동기화 중...';
+    
+    // AJAX 요청
+    fetch(form.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        resultDiv.style.display = 'block';
+        resultMessage.textContent = data.message;
+        resultMessage.className = data.success ? 'text-success' : 'text-danger';
+        
+        if (data.success) {
+            // 3초 후 페이지 새로고침
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+        }
+    })
+    .catch(error => {
+        resultDiv.style.display = 'block';
+        resultMessage.textContent = '동기화 중 오류가 발생했습니다: ' + error.message;
+        resultMessage.className = 'text-danger';
+    })
+    .finally(() => {
+        // 로딩 표시 제거
+        submitBtn.disabled = false;
+        submitBtn.textContent = '동기화';
+    });
+}
+
 // DOMContentLoaded 이벤트에서 초기화
 document.addEventListener('DOMContentLoaded', function() {
     if (document.querySelector('.devices-container')) {
         initDevicesPage();
+        initSyncModal();
+    }
+    
+    if (document.querySelector('.device-detail-container')) {
+        initTabs();
     }
 });
 
