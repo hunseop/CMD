@@ -79,13 +79,6 @@
         </div>
 
         <div id="system-info" class="tab-content active">
-            <div class="tab-header-actions">
-                <form method="POST" action="{{ url_for('devices.sync_device', id=device.id) }}">
-                    <input type="hidden" name="sync_type" value="system_info">
-                    <button type="submit" class="btn primary">시스템 정보 동기화</button>
-                </form>
-            </div>
-            
             {% if system_info %}
             <div class="info-grid">
                 {% if system_info.hostname %}
@@ -160,19 +153,12 @@
             </div>
             {% else %}
             <div class="empty-state">
-                <p>시스템 정보가 없습니다. 동기화를 실행해주세요.</p>
+                <p>시스템 정보가 없습니다.</p>
             </div>
             {% endif %}
         </div>
 
         <div id="sync-history" class="tab-content">
-            <div class="tab-header-actions">
-                <form method="POST" action="{{ url_for('devices.sync_device', id=device.id) }}">
-                    <input type="hidden" name="sync_type" value="all">
-                    <button type="submit" class="btn primary">모든 정보 동기화</button>
-                </form>
-            </div>
-            
             {% if sync_histories %}
             <div class="table-container">
                 <table class="data-table">
