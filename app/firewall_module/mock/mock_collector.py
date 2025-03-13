@@ -66,7 +66,7 @@ class MockCollector(FirewallInterface):
             # 랜덤하게 20%의 규칙을 미사용으로 설정
             if random.random() < 0.2:
                 last_hit_date = None
-                unused_days = None
+                unused_days = 999  # 미사용 규칙의 경우 큰 값 설정
                 usage_status = '미사용'
             else:
                 # 최근 1~60일 사이의 랜덤한 날짜 생성
