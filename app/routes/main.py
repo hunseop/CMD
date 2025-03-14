@@ -1,4 +1,3 @@
-# Routes package
 from flask import Blueprint, render_template
 
 main_bp = Blueprint('main', __name__)
@@ -7,10 +6,6 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/dashboard')
 def dashboard():
     return render_template('dashboard.html')
-
-@main_bp.route('/policies')
-def policies():
-    return render_template('policies.html')
 
 @main_bp.route('/analysis')
 def analysis():

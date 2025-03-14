@@ -14,6 +14,7 @@
     padding: 12px 15px;
     text-align: left;
     vertical-align: middle;
+    white-space: nowrap;  /* 텍스트 줄바꿈 방지 */
 }
 
 .data-table th {
@@ -24,6 +25,9 @@
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    position: sticky;  /* 헤더 고정 */
+    top: 0;
+    z-index: 1;
 }
 
 .data-table tr {
@@ -49,6 +53,69 @@
     padding: 30px;
     color: var(--text-muted);
     font-style: italic;
+}
+
+/* 테이블 반응형 스크롤 */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+    border-radius: 8px;  /* 테이블과 동일한 radius */
+    background-color: var(--card-bg);
+    box-shadow: var(--shadow-sm);
+}
+
+.table-responsive .data-table {
+    margin-bottom: 0;
+    box-shadow: none;  /* 컨테이너에 이미 shadow가 있으므로 제거 */
+}
+
+/* 스크롤바 스타일링 */
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: var(--background-color);
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* 테이블 셀 최소 너비 설정 */
+.data-table th:first-child,
+.data-table td:first-child {
+    min-width: 60px;   /* 순서 컬럼 */
+}
+
+.data-table th:nth-child(2),
+.data-table td:nth-child(2) {
+    min-width: 120px;  /* 장비명 컬럼 */
+}
+
+.data-table th:nth-child(3),
+.data-table td:nth-child(3) {
+    min-width: 150px;  /* 규칙명 컬럼 */
+}
+
+.data-table th:nth-child(6),
+.data-table td:nth-child(6),
+.data-table th:nth-child(7),
+.data-table td:nth-child(7) {
+    min-width: 200px;  /* 출발지, 목적지 컬럼 */
+}
+
+.data-table th:nth-child(14),
+.data-table td:nth-child(14) {
+    min-width: 200px;  /* 설명 컬럼 */
 }
 
 /* 테이블 반응형 */

@@ -1,0 +1,39 @@
+{% if policies %}
+    {% for policy in policies %}
+    <tr>
+        <td>{{ policy.seq }}</td>
+        <td>{{ policy.device.name }}</td>
+        <td>{{ policy.rule_name }}</td>
+        <td>
+            {% if policy.enable == 'Y' %}
+                <span class="badge badge-success">활성화</span>
+            {% else %}
+                <span class="badge badge-secondary">비활성화</span>
+            {% endif %}
+        </td>
+        <td>{{ policy.action }}</td>
+        <td>{{ policy.source }}</td>
+        <td>{{ policy.destination }}</td>
+        <td>{{ policy.service }}</td>
+        <td>{{ policy.user or '-' }}</td>
+        <td>{{ policy.application or '-' }}</td>
+        <td>{{ policy.vsys or '-' }}</td>
+        <td>{{ policy.security_profile or '-' }}</td>
+        <td>{{ policy.category or '-' }}</td>
+        <td>{{ policy.description or '-' }}</td>
+        <td>
+            {% if policy.usage_status == '사용' %}
+                <span class="badge badge-info">사용중</span>
+            {% else %}
+                <span class="badge badge-warning">미사용</span>
+            {% endif %}
+        </td>
+        <td>{{ policy.last_hit_date or '-' }}</td>
+        <td>{{ policy.unused_days or '-' }}</td>
+    </tr>
+    {% endfor %}
+{% else %}
+    <tr>
+        <td colspan="17" class="empty-message">등록된 정책이 없습니다.</td>
+    </tr>
+{% endif %} 

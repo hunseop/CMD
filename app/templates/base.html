@@ -33,10 +33,23 @@
                             장비 관리
                         </a>
                     </li>
-                    <li>
-                        <a href="{{ url_for('main.policies') }}" class="nav-link" data-link>
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle">
                             정책 관리
                         </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="{{ url_for('policies.index') }}" class="dropdown-item">
+                                    방화벽 정책
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item disabled">
+                                    프록시 정책
+                                    <span class="coming-soon">준비중</span>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                     <li>
                         <a href="{{ url_for('main.analysis') }}" class="nav-link" data-link>

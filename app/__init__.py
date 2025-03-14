@@ -1,23 +1,30 @@
-from flask import Flask
+from flask import Flask, request
+from datetime import datetime, timedelta
+from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from config import Config
 
 db = SQLAlchemy()
 migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object(Config)
     
+    # 설정 로드
+    app.config.from_object('config.Config')
+    
+    # 데이터베이스 초기화
     db.init_app(app)
     migrate.init_app(app, db)
     
-    from app.routes import main_bp
-    app.register_blueprint(main_bp)
-    
+    # 블루프린트 등록
+    from app.routes.main import main_bp
     from app.routes.devices import devices_bp
+    from app.routes.policies import policies_bp
+    
+    app.register_blueprint(main_bp)
     app.register_blueprint(devices_bp)
+    app.register_blueprint(policies_bp)
     
     return app
 

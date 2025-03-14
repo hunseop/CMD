@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}방화벽 정책{% endblock %}
+
+{% block content %}
+<div class="policies-container">
+    <div class="page-header">
+        <h2>방화벽 정책</h2>
+        <div class="actions">
+            <button class="btn">정책 분석</button>
+        </div>
+    </div>
+
+    <div class="search-filters">
+        <div class="search-bar">
+            <input type="text" placeholder="정책 검색..." id="policySearch">
+        </div>
+        <div class="filters">
+            <select id="deviceFilter">
+                <option value="">전체 장비</option>
+                {% for device in devices %}
+                    <option value="{{ device.id }}">{{ device.name }}</option>
+                {% endfor %}
+            </select>
+            <select id="statusFilter">
+                <option value="">전체 상태</option>
+                <option value="Y">활성화</option>
+                <option value="N">비활성화</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="policies-grid">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>순서</th>
+                        <th>장비</th>
+                        <th>규칙명</th>
+                        <th>상태</th>
+                        <th>동작</th>
+                        <th>출발지</th>
+                        <th>목적지</th>
+                        <th>서비스</th>
+                        <th>사용자</th>
+                        <th>애플리케이션</th>
+                        <th>가상시스템</th>
+                        <th>보안프로필</th>
+                        <th>카테고리</th>
+                        <th>설명</th>
+                        <th>사용여부</th>
+                        <th>마지막 사용</th>
+                        <th>미사용 일수</th>
+                    </tr>
+                </thead>
+                <tbody id="policies-table-body">
+                    {% include 'policies/_table.html' %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="pagination-container">
+            {% include 'devices/_pagination.html' %}
+        </div>
+    </div>
+</div>
+
+{% block page_js %}
+<script src="{{ url_for('static', filename='js/pages/policies.js') }}"></script>
+{% endblock %}
+
+{% endblock %} 
