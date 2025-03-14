@@ -65,8 +65,8 @@ def index():
                 elif operator == 'not_equals':
                     condition = FirewallPolicy.usage_status != usage_value
             elif field == 'enable':
-                # 활성화 여부 필터링 (true=1, false=0)
-                enable_value = '1' if value.lower() == 'true' else '0'
+                # 활성화 여부 필터링 (true=Y, false=N)
+                enable_value = 'Y' if value.lower() == 'true' else 'N'
                 if operator == 'equals':
                     condition = FirewallPolicy.enable == enable_value
                 elif operator == 'not_equals':

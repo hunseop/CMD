@@ -5,7 +5,7 @@
         <td>{{ policy.device.name }}</td>
         <td>{{ policy.rule_name }}</td>
         <td>
-            {% if policy.enable == '1' %}
+            {% if policy.enable == 'Y' %}
                 <span class="badge badge-success">활성화</span>
             {% else %}
                 <span class="badge badge-secondary">비활성화</span>

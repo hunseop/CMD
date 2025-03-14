@@ -41,7 +41,7 @@ class MockFirewall:
         self.rules = pd.DataFrame({
             'Seq': range(1, rule_count + 1),
             'Rule Name': [f"Rule_{random.choice(['Allow', 'Block', 'Permit'])}_{i}" for i in range(1, rule_count + 1)],
-            'Enable': [random.choice([True, True, True, False]) for _ in range(rule_count)],  # 75% 확률로 활성화
+            'Enable': [random.choice(['Y', 'Y', 'Y', 'N']) for _ in range(rule_count)],  # 75% 확률로 활성화
             'Action': [random.choice(['allow', 'deny']) for _ in range(rule_count)],
             'Source': [', '.join(random.sample(zones, random.randint(1, 3))) for _ in range(rule_count)],
             'User': ['any' if random.random() < 0.7 else f"user_group_{random.randint(1,5)}" for _ in range(rule_count)],
