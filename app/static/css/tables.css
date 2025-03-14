@@ -471,4 +471,169 @@
 .badge-secondary {
     background-color: var(--text-muted);
     color: white;
+}
+
+/* 필터 섹션 스타일 */
+.filter-section {
+    margin-bottom: 20px;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-outline {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+
+.btn-outline:hover {
+    border-color: var(--text-color);
+    background-color: var(--background-hover);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+/* 활성 필터 스타일 */
+.active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+    min-height: 40px;
+    padding: 8px;
+    border-radius: 6px;
+    background-color: var(--background-color);
+}
+
+.filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 13px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+
+.filter-tag .filter-text {
+    font-weight: 500;
+}
+
+.filter-tag .join-operator {
+    font-weight: 600;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 11px;
+}
+
+.filter-tag .join-and {
+    background-color: rgba(0, 123, 255, 0.1);
+    color: #0056b3;
+}
+
+.filter-tag .join-or {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: #d39e00;
+}
+
+.filter-tag .group-open,
+.filter-tag .group-close {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.filter-tag .remove-filter {
+    cursor: pointer;
+    opacity: 0.6;
+    transition: var(--transition);
+    font-size: 16px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.05);
+    margin-left: 4px;
+}
+
+.filter-tag .remove-filter:hover {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* 필터 폼 스타일 */
+.filter-form {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-sm);
+}
+
+.filter-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.filter-field,
+.filter-operator,
+.filter-value,
+.filter-join {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.filter-field,
+.filter-operator {
+    min-width: 140px;
+}
+
+.filter-value {
+    flex: 1;
+    min-width: 200px;
+}
+
+.filter-join {
+    min-width: 120px;
+}
+
+/* 검색 섹션 스타일 */
+.search-section {
+    margin-bottom: 20px;
 } 

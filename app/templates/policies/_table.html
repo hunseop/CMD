@@ -5,17 +5,19 @@
         <td>{{ policy.device.name }}</td>
         <td>{{ policy.rule_name }}</td>
         <td>
-            {% if policy.enable == 'Y' %}
+            {% if policy.enable == '1' %}
                 <span class="badge badge-success">활성화</span>
             {% else %}
                 <span class="badge badge-secondary">비활성화</span>
             {% endif %}
         </td>
         <td>
-            {% if policy.action %}
+            {% if policy.action == 'allow' %}
                 <span class="badge badge-success">허용</span>
-            {% else %}
+            {% elif policy.action == 'deny' %}
                 <span class="badge badge-danger">차단</span>
+            {% else %}
+                <span class="badge badge-secondary">{{ policy.action }}</span>
             {% endif %}
         </td>
         <td><span class="cell-content hoverable" data-full-text="{{ policy.source }}">{{ policy.source }}</span></td>

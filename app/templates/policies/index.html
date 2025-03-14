@@ -8,22 +8,67 @@
         <h2>방화벽 정책</h2>
     </div>
 
-    <div class="search-filters">
-        <div class="search-bar">
-            <input type="text" placeholder="정책 검색..." id="policySearch">
+    <!-- 필터 영역 -->
+    <div class="filter-section">
+        <!-- 필터 조건 추가 버튼 -->
+        <div class="filter-actions">
+            <button type="button" class="btn btn-outline" id="addFilterBtn">
+                <i data-feather="plus"></i> 필터 추가
+            </button>
+            <button type="button" class="btn btn-outline" id="clearFilterBtn">
+                <i data-feather="trash-2"></i> 필터 초기화
+            </button>
         </div>
-        <div class="filters">
-            <select id="deviceFilter">
-                <option value="">전체 장비</option>
-                {% for device in devices %}
-                    <option value="{{ device.id }}">{{ device.name }}</option>
-                {% endfor %}
-            </select>
-            <select id="statusFilter">
-                <option value="">전체 상태</option>
-                <option value="Y">활성화</option>
-                <option value="N">비활성화</option>
-            </select>
+
+        <!-- 활성 필터 조건 표시 영역 -->
+        <div class="active-filters" id="activeFilters">
+            <!-- 필터 조건들이 여기에 동적으로 추가됨 -->
+        </div>
+
+        <!-- 필터 조건 입력 폼 -->
+        <div class="filter-form" id="filterForm" style="display: none;">
+            <div class="filter-form-content">
+                <div class="filter-row">
+                    <select class="filter-field">
+                        <option value="">필드 선택</option>
+                        <option value="device_name">장비명</option>
+                        <option value="rule_name">규칙명</option>
+                        <option value="enable">상태</option>
+                        <option value="action">동작</option>
+                        <option value="source">출발지</option>
+                        <option value="destination">목적지</option>
+                        <option value="service">서비스</option>
+                        <option value="user">사용자</option>
+                        <option value="application">애플리케이션</option>
+                        <option value="vsys">가상시스템</option>
+                        <option value="security_profile">보안프로필</option>
+                        <option value="category">카테고리</option>
+                        <option value="usage_status">사용여부</option>
+                    </select>
+                    <select class="filter-operator">
+                        <option value="contains">포함</option>
+                        <option value="not_contains">미포함</option>
+                        <option value="equals">일치</option>
+                        <option value="not_equals">불일치</option>
+                        <option value="starts_with">시작</option>
+                        <option value="ends_with">끝</option>
+                    </select>
+                    <input type="text" class="filter-value" placeholder="필터값 입력">
+                    <select class="filter-join" style="display: none;">
+                        <option value="and">그리고 (AND)</option>
+                        <option value="or">또는 (OR)</option>
+                    </select>
+                    <button type="button" class="btn btn-primary" id="applyFilterBtn">적용</button>
+                    <button type="button" class="btn btn-outline" id="cancelFilterBtn">취소</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 검색 영역 -->
+    <div class="search-section">
+        <div class="search-bar">
+            <input type="text" id="policySearch" placeholder="필터된 결과 내 검색...">
         </div>
     </div>
 
@@ -32,8 +77,8 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>순서</th>
-                        <th>장비</th>
+                        <th>번호</th>
+                        <th>장비명</th>
                         <th>규칙명</th>
                         <th>상태</th>
                         <th>동작</th>
