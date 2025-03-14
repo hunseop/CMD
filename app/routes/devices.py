@@ -21,7 +21,24 @@ devices_bp = Blueprint('devices', __name__, url_prefix='/devices')
 @devices_bp.route('/')
 def index():
     """장비 목록 조회"""
-    devices = Device.query.all()
+    page = request.args.get('page', 1, type=int)
+    search = request.args.get('search', '')
+    per_page = 10  # 페이지당 항목 수
+    
+    # 검색 쿼리 구성
+    query = Device.query
+    if search:
+        query = query.filter(
+            Device.name.ilike(f'%{search}%') |
+            Device.category.ilike(f'%{search}%') |
+            Device.manufacturer.ilike(f'%{search}%') |
+            Device.model.ilike(f'%{search}%') |
+            Device.ip_address.ilike(f'%{search}%')
+        )
+    
+    # 페이지네이션 적용
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    devices = pagination.items
     
     # 각 장비별 마지막 동기화 정보 조회
     sync_info = {}
@@ -33,16 +50,73 @@ def index():
             # 마지막 동기화 이력
             last_sync = SyncHistory.query.filter_by(device_id=device.id).order_by(SyncHistory.created_at.desc()).first()
             
-            # 정책 수
-            policy_count = FirewallPolicy.query.filter_by(device_id=device.id).count()
-            
             sync_info[device.id] = {
                 'system_info': system_info,
-                'last_sync': last_sync,
-                'policy_count': policy_count
+                'last_sync': last_sync
             }
     
-    return render_template('devices/index.html', devices=devices, sync_info=sync_info)
+    # AJAX 요청인 경우 JSON 응답
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        html = render_template('devices/_table.html',
+                             devices=devices,
+                             sync_info=sync_info)
+        pagination_html = render_template('devices/_pagination.html',
+                                        pagination=pagination)
+        return jsonify({
+            'html': html,
+            'pagination': pagination_html
+        })
+    
+    # 일반 요청인 경우 전체 페이지 렌더링
+    return render_template('devices/index.html',
+                         devices=devices,
+                         sync_info=sync_info,
+                         pagination=pagination)
+
+@devices_bp.route('/list')
+def list_devices():
+    """장비 목록 AJAX 조회"""
+    page = request.args.get('page', 1, type=int)
+    search = request.args.get('search', '')
+    per_page = 10
+    
+    # 검색 쿼리 구성
+    query = Device.query
+    if search:
+        query = query.filter(
+            Device.name.ilike(f'%{search}%') |
+            Device.category.ilike(f'%{search}%') |
+            Device.manufacturer.ilike(f'%{search}%') |
+            Device.model.ilike(f'%{search}%') |
+            Device.ip_address.ilike(f'%{search}%')
+        )
+    
+    # 페이지네이션 적용
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    devices = pagination.items
+    
+    # 각 장비별 마지막 동기화 정보 조회
+    sync_info = {}
+    for device in devices:
+        if device.category == 'firewall':
+            system_info = FirewallSystemInfo.query.filter_by(device_id=device.id).first()
+            last_sync = SyncHistory.query.filter_by(device_id=device.id).order_by(SyncHistory.created_at.desc()).first()
+            sync_info[device.id] = {
+                'system_info': system_info,
+                'last_sync': last_sync
+            }
+    
+    # 테이블 내용과 페이지네이션 HTML 렌더링
+    table_html = render_template('devices/_table.html',
+                               devices=devices,
+                               sync_info=sync_info)
+    pagination_html = render_template('devices/_pagination.html',
+                                    pagination=pagination)
+    
+    return jsonify({
+        'html': table_html,
+        'pagination': pagination_html
+    })
 
 @devices_bp.route('/create', methods=['GET', 'POST'])
 def create():

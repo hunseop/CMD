@@ -134,4 +134,46 @@
 .empty-state p {
     margin: 0;
     font-size: 14px;
+}
+
+/* 페이지네이션 스타일 */
+.pagination-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.pagination {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.pagination .page-link {
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.pagination .page-link:hover {
+    background-color: var(--background-hover);
+    border-color: var(--border-hover);
+}
+
+.pagination .current-page {
+    padding: 6px 12px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.pagination .ellipsis {
+    color: var(--text-muted);
+    padding: 6px 8px;
+    font-size: 14px;
 } 

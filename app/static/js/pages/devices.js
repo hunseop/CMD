@@ -309,6 +309,59 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.querySelector('.device-detail-container')) {
         initTabs();
     }
+
+    // 페이지네이션 처리
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('.page-link')) {
+            e.preventDefault();
+            const page = e.target.dataset.page;
+            const searchQuery = document.getElementById('deviceSearch').value;
+            loadDevices(page, searchQuery);
+        }
+    });
+
+    // 검색 처리
+    const searchInput = document.getElementById('deviceSearch');
+    let searchTimeout;
+    
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            loadDevices(1, this.value);
+        }, 300);
+    });
+
+    function loadDevices(page, search = '') {
+        const tableBody = document.getElementById('devices-table-body');
+        const paginationContainer = document.querySelector('.pagination-container');
+        
+        fetch(`/devices/list?page=${page}&search=${encodeURIComponent(search)}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // 테이블 내용 업데이트
+            tableBody.innerHTML = data.html;
+            
+            // 페이지네이션 업데이트
+            paginationContainer.innerHTML = data.pagination;
+            
+            // URL 업데이트 (브라우저 히스토리는 변경하지 않음)
+            const url = new URL(window.location);
+            url.searchParams.set('page', page);
+            if (search) {
+                url.searchParams.set('search', search);
+            } else {
+                url.searchParams.delete('search');
+            }
+            window.history.replaceState({}, '', url);
+        })
+        .catch(error => {
+            console.error('Error loading devices:', error);
+        });
+    }
 });
 
 // 전역 스코프로 내보내기

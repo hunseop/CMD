@@ -33,7 +33,7 @@
                     <th>작업</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="devices-table-body">
                 {% if devices %}
                     {% for device in devices %}
                     <tr>
@@ -71,11 +71,15 @@
                     {% endfor %}
                 {% else %}
                     <tr>
-                        <td colspan="6" class="empty-message">등록된 장비가 없습니다.</td>
+                        <td colspan="7" class="empty-message">등록된 장비가 없습니다.</td>
                     </tr>
                 {% endif %}
             </tbody>
         </table>
+        
+        <div class="pagination-container">
+            {% include 'devices/_pagination.html' %}
+        </div>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
