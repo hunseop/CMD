@@ -8,10 +8,10 @@ policies_bp = Blueprint('policies', __name__, url_prefix='/policies')
 def index():
     """정책 목록 조회"""
     page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)  # 페이지당 항목 수
     search = request.args.get('search', '')
     device_id = request.args.get('device_id', type=int)
     status = request.args.get('status', '')
-    per_page = 10  # 페이지당 항목 수
     
     # 쿼리 구성
     query = FirewallPolicy.query.join(Device)
@@ -48,7 +48,7 @@ def index():
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         html = render_template('policies/_table.html',
                              policies=policies)
-        pagination_html = render_template('devices/_pagination.html',
+        pagination_html = render_template('policies/_pagination.html',
                                         pagination=pagination)
         return jsonify({
             'html': html,

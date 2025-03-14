@@ -1,4 +1,14 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // 저장된 페이지당 항목 수 복원
+    const savedPerPage = localStorage.getItem('policiesPerPage');
+    if (savedPerPage) {
+        const perPageSelect = document.getElementById('perPage');
+        if (perPageSelect) {
+            perPageSelect.value = savedPerPage;
+            loadPolicies(1);  // 저장된 항목 수로 데이터 로드
+        }
+    }
+
     // 페이지네이션 이벤트 처리
     function bindPaginationEvents() {
         document.querySelectorAll('.page-link').forEach(link => {
@@ -22,6 +32,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 loadPolicies(targetPage);
             });
         });
+
+        // 페이지당 항목 수 변경 이벤트 처리
+        const perPageSelect = document.getElementById('perPage');
+        if (perPageSelect) {
+            perPageSelect.addEventListener('change', function() {
+                // 선택한 값을 localStorage에 저장
+                localStorage.setItem('policiesPerPage', this.value);
+                loadPolicies(1); // 페이지당 항목 수가 변경되면 첫 페이지로 이동
+            });
+        }
     }
 
     // 초기 이벤트 바인딩
@@ -32,8 +52,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const deviceId = document.getElementById('deviceFilter').value;
         const status = document.getElementById('statusFilter').value;
         const search = document.getElementById('policySearch').value;
+        const perPage = document.getElementById('perPage')?.value || localStorage.getItem('policiesPerPage') || 10;
 
-        fetch(`/policies/?page=${page}&device_id=${deviceId}&status=${status}&search=${search}`, {
+        fetch(`/policies/?page=${page}&per_page=${perPage}&device_id=${deviceId}&status=${status}&search=${search}`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             }
@@ -41,10 +62,19 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 document.getElementById('policies-table-body').innerHTML = data.html;
-                document.querySelector('.pagination-container').innerHTML = data.pagination;
+                const paginationWrapper = document.querySelector('.pagination-wrapper');
+                if (paginationWrapper) {
+                    paginationWrapper.outerHTML = data.pagination;
+                }
                 
                 // 페이지네이션 이벤트 다시 바인딩
                 bindPaginationEvents();
+
+                // 페이지당 항목 수 선택값 유지
+                const perPageSelect = document.getElementById('perPage');
+                if (perPageSelect) {
+                    perPageSelect.value = perPage;
+                }
             })
             .catch(error => console.error('Error:', error));
     }
