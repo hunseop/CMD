@@ -47,7 +47,8 @@ def index():
     # AJAX 요청인 경우 JSON 응답
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         html = render_template('policies/_table.html',
-                             policies=policies)
+                             policies=policies,
+                             pagination=pagination)
         pagination_html = render_template('policies/_pagination.html',
                                         pagination=pagination)
         return jsonify({

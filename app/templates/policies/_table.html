@@ -1,7 +1,7 @@
 {% if policies %}
     {% for policy in policies %}
     <tr>
-        <td>{{ policy.seq }}</td>
+        <td>{{ loop.index + ((pagination.page - 1) * pagination.per_page) }}</td>
         <td>{{ policy.device.name }}</td>
         <td>{{ policy.rule_name }}</td>
         <td>
@@ -11,16 +11,22 @@
                 <span class="badge badge-secondary">비활성화</span>
             {% endif %}
         </td>
-        <td>{{ policy.action }}</td>
-        <td>{{ policy.source }}</td>
-        <td>{{ policy.destination }}</td>
-        <td>{{ policy.service }}</td>
+        <td>
+            {% if policy.action %}
+                <span class="badge badge-success">허용</span>
+            {% else %}
+                <span class="badge badge-danger">차단</span>
+            {% endif %}
+        </td>
+        <td><span class="cell-content hoverable" data-full-text="{{ policy.source }}">{{ policy.source }}</span></td>
+        <td><span class="cell-content hoverable" data-full-text="{{ policy.destination }}">{{ policy.destination }}</span></td>
+        <td><span class="cell-content hoverable" data-full-text="{{ policy.service }}">{{ policy.service }}</span></td>
         <td>{{ policy.user or '-' }}</td>
         <td>{{ policy.application or '-' }}</td>
         <td>{{ policy.vsys or '-' }}</td>
         <td>{{ policy.security_profile or '-' }}</td>
         <td>{{ policy.category or '-' }}</td>
-        <td>{{ policy.description or '-' }}</td>
+        <td><span class="cell-content hoverable" data-full-text="{{ policy.description or '-' }}">{{ policy.description or '-' }}</span></td>
         <td>
             {% if policy.usage_status == '사용' %}
                 <span class="badge badge-info">사용중</span>

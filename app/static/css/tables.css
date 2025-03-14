@@ -14,7 +14,8 @@
     padding: 12px 15px;
     text-align: left;
     vertical-align: middle;
-    white-space: nowrap;  /* 텍스트 줄바꿈 방지 */
+    position: relative;
+    white-space: nowrap;
 }
 
 .data-table th {
@@ -98,10 +99,10 @@
     background: var(--text-muted);
 }
 
-/* 테이블 셀 최소 너비 설정 */
+/* 테이블 셀 최소/최대 너비 설정 */
 .data-table th:first-child,
 .data-table td:first-child {
-    min-width: 60px;   /* 순서 컬럼 */
+    width: 60px;   /* 순서 컬럼 */
 }
 
 .data-table th:nth-child(2),
@@ -114,16 +115,67 @@
     min-width: 150px;  /* 규칙명 컬럼 */
 }
 
+.data-table th:nth-child(4),
+.data-table td:nth-child(4),
+.data-table th:nth-child(5),
+.data-table td:nth-child(5),
+.data-table th:nth-child(15),
+.data-table td:nth-child(15) {
+    width: 80px;   /* 상태, 동작, 사용여부 컬럼 */
+    text-align: center;
+}
+
 .data-table th:nth-child(6),
 .data-table td:nth-child(6),
 .data-table th:nth-child(7),
 .data-table td:nth-child(7) {
-    min-width: 200px;  /* 출발지, 목적지 컬럼 */
+    min-width: 180px;  /* 출발지, 목적지 컬럼 */
+}
+
+.data-table th:nth-child(8),
+.data-table td:nth-child(8) {
+    min-width: 150px;  /* 서비스 컬럼 */
+}
+
+.data-table th:nth-child(9),
+.data-table td:nth-child(9) {
+    min-width: 120px;  /* 사용자 컬럼 */
+}
+
+.data-table th:nth-child(10),
+.data-table td:nth-child(10) {
+    min-width: 150px;  /* 애플리케이션 컬럼 */
+}
+
+.data-table th:nth-child(11),
+.data-table td:nth-child(11) {
+    min-width: 120px;  /* 가상시스템 컬럼 */
+}
+
+.data-table th:nth-child(12),
+.data-table td:nth-child(12) {
+    min-width: 150px;  /* 보안프로필 컬럼 */
+}
+
+.data-table th:nth-child(13),
+.data-table td:nth-child(13) {
+    min-width: 120px;  /* 카테고리 컬럼 */
 }
 
 .data-table th:nth-child(14),
 .data-table td:nth-child(14) {
     min-width: 200px;  /* 설명 컬럼 */
+}
+
+.data-table th:nth-child(16),
+.data-table td:nth-child(16) {
+    min-width: 100px;  /* 마지막 사용 컬럼 */
+}
+
+.data-table th:nth-child(17),
+.data-table td:nth-child(17) {
+    width: 80px;  /* 미사용 일수 컬럼 */
+    text-align: right;
 }
 
 /* 테이블 반응형 */
@@ -338,4 +390,85 @@
 
 .search-bar button:hover {
     background-color: var(--secondary-color);
+}
+
+/* 셀 내용 처리 - 기본 스타일 */
+.cell-content {
+    display: inline-block;
+    position: relative;
+}
+
+/* 호버 가능한 셀 내용 스타일 */
+.cell-content.hoverable {
+    cursor: help;
+}
+
+/* 호버 시 전체 내용 표시 */
+.cell-content.hoverable:hover::after {
+    content: attr(data-full-text);
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    z-index: 1000;
+    background-color: var(--card-bg);
+    box-shadow: var(--shadow);
+    padding: 8px 12px;
+    border-radius: 4px;
+    white-space: normal;
+    word-break: break-all;
+    min-width: 200px;
+    max-width: 400px;
+    font-size: 13px;
+    color: var(--text-color);
+    pointer-events: none; /* 호버 창이 마우스 이벤트를 방해하지 않도록 함 */
+}
+
+/* 긴 텍스트 처리가 필요한 컬럼 */
+.data-table td:nth-child(6) .cell-content,  /* 출발지 */
+.data-table td:nth-child(7) .cell-content,  /* 목적지 */
+.data-table td:nth-child(8) .cell-content,  /* 서비스 */
+.data-table td:nth-child(14) .cell-content { /* 설명 */
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 상태 배지 스타일 */
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    border-radius: 4px;
+    min-width: 60px;
+}
+
+.badge-success {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.badge-danger {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.badge-warning {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.badge-info {
+    background-color: var(--info-color);
+    color: white;
+}
+
+.badge-secondary {
+    background-color: var(--text-muted);
+    color: white;
 } 
