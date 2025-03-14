@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const activeFiltersContainer = document.getElementById('activeFilters');
     const applyFilterBtn = document.getElementById('applyFilterBtn');
     const cancelFilterBtn = document.getElementById('cancelFilterBtn');
+    const exportExcelBtn = document.getElementById('exportExcelBtn');
     
     // 필터 폼 필드
     const filterField = document.querySelector('.filter-field');
@@ -36,6 +37,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     if (cancelFilterBtn) {
         cancelFilterBtn.addEventListener('click', hideFilterForm);
+    }
+    if (exportExcelBtn) {
+        exportExcelBtn.addEventListener('click', exportToExcel);
     }
     
     // 필터 폼 표시
@@ -505,6 +509,82 @@ document.addEventListener('DOMContentLoaded', function() {
         searchInput.addEventListener('input', function() {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => loadPolicies(1), 300);
+        });
+    }
+
+    // 엑셀 내보내기 함수
+    function exportToExcel() {
+        const deviceId = document.getElementById('deviceFilter')?.value || '';
+        const status = document.getElementById('statusFilter')?.value || '';
+        const search = document.getElementById('policySearch')?.value || '';
+        
+        // 내보내기 버튼 비활성화 및 로딩 표시
+        if (exportExcelBtn) {
+            exportExcelBtn.disabled = true;
+            exportExcelBtn.innerHTML = '<i data-feather="loader" class="loader"></i> 내보내는 중...';
+            // feather 아이콘 새로고침
+            if (typeof feather !== 'undefined') {
+                feather.replace();
+            }
+        }
+        
+        // API 요청 데이터 구성
+        const requestData = {
+            device_id: deviceId,
+            status: status,
+            search: search,
+            filters: activeFilters
+        };
+        
+        // AJAX 요청 (Blob 형식으로 받기)
+        fetch('/policies/export', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('서버 응답 오류: ' + response.status);
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            // 다운로드 링크 생성
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const now = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14);
+            a.href = url;
+            a.download = `firewall_policies_${now}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            // 버튼 상태 복원
+            if (exportExcelBtn) {
+                exportExcelBtn.disabled = false;
+                exportExcelBtn.innerHTML = '<i data-feather="download"></i> 엑셀 내보내기';
+                // feather 아이콘 새로고침
+                if (typeof feather !== 'undefined') {
+                    feather.replace();
+                }
+            }
+        })
+        .catch(error => {
+            // 오류 처리
+            alert('엑셀 파일 생성 중 오류가 발생했습니다.');
+            
+            // 버튼 상태 복원
+            if (exportExcelBtn) {
+                exportExcelBtn.disabled = false;
+                exportExcelBtn.innerHTML = '<i data-feather="download"></i> 엑셀 내보내기';
+                // feather 아이콘 새로고침
+                if (typeof feather !== 'undefined') {
+                    feather.replace();
+                }
+            }
         });
     }
 }); 
