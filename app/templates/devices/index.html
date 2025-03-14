@@ -18,7 +18,6 @@
     
     <div class="search-bar">
         <input type="text" placeholder="장비 검색..." id="deviceSearch">
-        <button class="btn">검색</button>
     </div>
 
     <div class="devices-grid">
@@ -48,13 +47,11 @@
                                 {% set info = sync_info[device.id] %}
                                 {% if info.system_info %}
                                     <span class="sync-status success">동기화됨</span>
-                                    <div class="sync-details">
-                                        <div>정책 수: {{ info.policy_count }}</div>
-                                        {% if info.last_sync %}
-                                            <div>마지막 동기화: {{ info.last_sync.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
-                                            <div>상태: {{ info.last_sync.status }}</div>
-                                        {% endif %}
-                                    </div>
+                                    {% if info.last_sync %}
+                                        <div class="sync-details">
+                                            {{ info.last_sync.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                        </div>
+                                    {% endif %}
                                 {% else %}
                                     <span class="sync-status warning">미동기화</span>
                                 {% endif %}
