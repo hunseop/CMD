@@ -132,38 +132,83 @@
 }
 
 /* 테이블 페이지네이션 */
-.pagination {
+.pagination-container {
     display: flex;
     justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: var(--card-bg);
+    padding: 8px;
+    border-radius: 6px;
+    box-shadow: var(--shadow-sm);
     list-style: none;
-    margin: 20px 0;
+    margin: 0;
 }
 
-.pagination li {
-    margin: 0 5px;
-}
-
-.pagination a {
+.page-link {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 6px;
-    text-decoration: none;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    border-radius: 4px;
     color: var(--text-color);
-    background-color: var(--card-bg);
-    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+    font-size: 14px;
     transition: var(--transition);
 }
 
-.pagination a:hover {
-    background-color: var(--background-color);
+.page-link:hover {
+    background-color: var(--background-hover);
 }
 
-.pagination a.active {
+.current-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    border-radius: 4px;
     background-color: var(--primary-color);
     color: white;
+    font-weight: 500;
+}
+
+.ellipsis {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    color: var(--text-muted);
+}
+
+/* 이전/다음 버튼 스타일 */
+.pagination a[data-page="prev"],
+.pagination a[data-page="next"] {
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .pagination {
+        gap: 3px;
+        padding: 6px;
+    }
+
+    .page-link,
+    .current-page,
+    .ellipsis {
+        min-width: 28px;
+        height: 28px;
+        font-size: 13px;
+    }
 }
 
 /* 테이블 필터 */

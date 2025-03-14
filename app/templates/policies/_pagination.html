@@ -1,0 +1,23 @@
+{% if pagination.pages > 1 %}
+<div class="pagination">
+    {% if pagination.has_prev %}
+        <a href="#" class="page-link" data-page="prev" aria-label="이전 페이지">&laquo;</a>
+    {% endif %}
+
+    {% for page in pagination.iter_pages() %}
+        {% if page %}
+            {% if page != pagination.page %}
+                <a href="#" class="page-link" data-page="{{ page }}">{{ page }}</a>
+            {% else %}
+                <span class="current-page">{{ page }}</span>
+            {% endif %}
+        {% else %}
+            <span class="ellipsis">...</span>
+        {% endif %}
+    {% endfor %}
+
+    {% if pagination.has_next %}
+        <a href="#" class="page-link" data-page="next" aria-label="다음 페이지">&raquo;</a>
+    {% endif %}
+</div>
+{% endif %} 
