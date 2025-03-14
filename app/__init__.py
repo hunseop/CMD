@@ -19,7 +19,7 @@ def create_app():
     
     # 블루프린트 등록
     from app.routes.main import main_bp
-    from app.routes.devices import devices_bp
+    from app.routes.devices import devices_bp  # 이제 이것은 app/routes/devices/__init__.py를 가리킵니다
     from app.routes.policies import policies_bp
     
     app.register_blueprint(main_bp)
