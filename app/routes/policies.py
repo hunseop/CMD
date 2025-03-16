@@ -146,9 +146,21 @@ def export_excel():
         data = request.get_json()
         filters = data.get('filters', [])
         search = data.get('search', '')
+        device_id = data.get('device_id', '')  # 장비 ID 파라미터 추가
+        enable = data.get('enable', '')  # 활성화 상태 파라미터 추가
         
         # 기본 쿼리 구성
         query = FirewallPolicy.query.join(Device)
+        
+        # 장비 ID 필터 적용
+        if device_id:
+            query = query.filter(Device.id == device_id)
+            
+        # 활성화 상태 필터 적용
+        if enable:
+            # 'Y'와 'N' 값을 올바르게 처리
+            if enable in ['Y', 'N']:
+                query = query.filter(FirewallPolicy.enable == enable)
         
         # 필터 적용
         or_filters = []
@@ -187,8 +199,8 @@ def export_excel():
                 elif operator == 'not_equals':
                     condition = FirewallPolicy.usage_status != usage_value
             elif field == 'enable':
-                # 활성화 여부 필터링 (true=1, false=0)
-                enable_value = '1' if value.lower() == 'true' else '0'
+                # 활성화 여부 필터링 (true=Y, false=N)
+                enable_value = 'Y' if value.lower() == 'true' else 'N'
                 if operator == 'equals':
                     condition = FirewallPolicy.enable == enable_value
                 elif operator == 'not_equals':
@@ -241,7 +253,7 @@ def export_excel():
         data = []
         for policy in policies:
             # 상태 및 동작 값 변환
-            enable_status = '활성화' if policy.enable == '1' else '비활성화'
+            enable_status = '활성화' if policy.enable == 'Y' else '비활성화'
             action_status = '허용' if policy.action == 'allow' else '차단' if policy.action == 'deny' else policy.action
             
             data.append({
