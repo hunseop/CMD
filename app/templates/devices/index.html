@@ -20,62 +20,25 @@
         <input type="text" placeholder="장비 검색..." id="deviceSearch">
     </div>
 
-    <div class="devices-grid">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>장비명</th>
-                    <th>분류</th>
-                    <th>제조사</th>
-                    <th>모델명</th>
-                    <th>IP 주소</th>
-                    <th>동기화 상태</th>
-                    <th>작업</th>
-                </tr>
-            </thead>
-            <tbody id="devices-table-body">
-                {% if devices %}
-                    {% for device in devices %}
+    <div class="policies-grid">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
                     <tr>
-                        <td><a href="{{ url_for('devices.detail', id=device.id) }}" class="device-name-link">{{ device.name }}</a></td>
-                        <td>{{ device.category }}</td>
-                        <td>{{ device.manufacturer }}</td>
-                        <td>{{ device.model }}</td>
-                        <td>{{ device.connection_string }}</td>
-                        <td>
-                            {% if device.category == 'firewall' and device.id in sync_info %}
-                                {% set info = sync_info[device.id] %}
-                                {% if info.system_info %}
-                                    <span class="sync-status success">동기화됨</span>
-                                    {% if info.last_sync %}
-                                        <div class="sync-details">
-                                            {{ info.last_sync.created_at.strftime('%Y-%m-%d %H:%M') }}
-                                        </div>
-                                    {% endif %}
-                                {% else %}
-                                    <span class="sync-status warning">미동기화</span>
-                                {% endif %}
-                            {% else %}
-                                <span class="sync-status">-</span>
-                            {% endif %}
-                        </td>
-                        <td class="actions">
-                            <a href="{{ url_for('devices.detail', id=device.id) }}" class="btn small">상세</a>
-                            <a href="{{ url_for('devices.edit', id=device.id) }}" class="btn small">수정</a>
-                            {% if device.category == 'firewall' %}
-                                <button class="btn small primary sync-btn" data-id="{{ device.id }}" data-name="{{ device.name }}">동기화</button>
-                            {% endif %}
-                            <button class="btn small danger delete-btn" data-id="{{ device.id }}" data-name="{{ device.name }}">삭제</button>
-                        </td>
+                        <th>장비명</th>
+                        <th>분류</th>
+                        <th>제조사</th>
+                        <th>모델명</th>
+                        <th>IP 주소</th>
+                        <th>동기화 상태</th>
+                        <th>작업</th>
                     </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="7" class="empty-message">등록된 장비가 없습니다.</td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody id="devices-table-body">
+                    {% include 'devices/_table.html' %}
+                </tbody>
+            </table>
+        </div>
         
         <div class="pagination-container">
             {% include 'devices/_pagination.html' %}
