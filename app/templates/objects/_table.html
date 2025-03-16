@@ -1,0 +1,35 @@
+{% if objects and objects|length > 0 %}
+    {% for object in objects %}
+    <tr>
+        <td>{{ loop.index + ((pagination.page - 1) * pagination.per_page) }}</td>
+        <td>{{ object.device.name }}</td>
+        {% if object_type == 'network' %}
+            <td>{{ object.name }}</td>
+            <td>{{ object.type }}</td>
+            <td><span class="cell-content hoverable" data-full-text="{{ object.value }}">{{ object.value }}</span></td>
+        {% elif object_type == 'network-group' %}
+            <td>{{ object.group_name }}</td>
+            <td>네트워크 그룹</td>
+            <td><span class="cell-content hoverable" data-full-text="{{ object.entry }}">{{ object.entry }}</span></td>
+        {% elif object_type == 'service' %}
+            <td>{{ object.name }}</td>
+            <td>{{ object.protocol }}</td>
+            <td><span class="cell-content hoverable" data-full-text="{{ object.port }}">{{ object.port }}</span></td>
+        {% elif object_type == 'service-group' %}
+            <td>{{ object.group_name }}</td>
+            <td>서비스 그룹</td>
+            <td><span class="cell-content hoverable" data-full-text="{{ object.entry }}">{{ object.entry }}</span></td>
+        {% else %}
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        {% endif %}
+        <td>{{ object.firewall_type }}</td>
+        <td>{{ object.last_sync_at.strftime('%Y-%m-%d %H:%M:%S') if object.last_sync_at else '' }}</td>
+    </tr>
+    {% endfor %}
+{% else %}
+    <tr>
+        <td colspan="7" class="empty-message">등록된 객체가 없습니다.</td>
+    </tr>
+{% endif %} 

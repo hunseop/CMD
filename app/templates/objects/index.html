@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}방화벽 객체 관리{% endblock %}
+
+{% block content %}
+<div class="objects-container">
+    <div class="page-header">
+        <h2>방화벽 객체 관리</h2>
+        <div class="header-actions">
+            <button type="button" class="btn btn-outline" id="exportToExcel">
+                <i data-feather="download"></i> 엑셀 내보내기
+            </button>
+        </div>
+    </div>
+
+    <!-- 필터 영역 -->
+    <div class="filter-section">
+        <!-- 필터 조건 추가 버튼 -->
+        <div class="filter-actions">
+            <button type="button" class="btn btn-outline" id="addFilterBtn">
+                <i data-feather="plus"></i> 필터 추가
+            </button>
+            <button type="button" class="btn btn-outline" id="clearFilterBtn">
+                <i data-feather="trash-2"></i> 필터 초기화
+            </button>
+        </div>
+
+        <!-- 활성 필터 조건 표시 영역 -->
+        <div class="active-filters" id="activeFilters">
+            <!-- 필터 조건들이 여기에 동적으로 추가됨 -->
+        </div>
+
+        <!-- 필터 조건 입력 폼 -->
+        <div class="filter-form" id="filterForm" style="display: none;">
+            <div class="filter-form-content">
+                <div class="filter-row">
+                    <select class="filter-field">
+                        <option value="">필드 선택</option>
+                        <option value="device_name">장비명</option>
+                        <option value="name">객체명</option>
+                        <option value="type">객체 유형</option>
+                        <option value="value">값</option>
+                        <option value="firewall_type">방화벽 유형</option>
+                    </select>
+                    <select class="filter-operator">
+                        <option value="contains">포함</option>
+                        <option value="not_contains">미포함</option>
+                        <option value="equals">일치</option>
+                        <option value="not_equals">불일치</option>
+                        <option value="starts_with">시작</option>
+                        <option value="ends_with">끝</option>
+                    </select>
+                    <input type="text" class="filter-value" placeholder="필터값 입력">
+                    <select class="filter-join" style="display: none;">
+                        <option value="and">그리고 (AND)</option>
+                        <option value="or">또는 (OR)</option>
+                    </select>
+                    <button type="button" class="btn btn-primary" id="applyFilterBtn">적용</button>
+                    <button type="button" class="btn btn-outline" id="cancelFilterBtn">취소</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 검색 영역 -->
+    <div class="search-section">
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="필터된 결과 내 검색...">
+            <button type="button" id="searchBtn">
+                <i data-feather="search"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 객체 유형 선택 버튼 -->
+    <div class="object-type-buttons mb-3">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-primary" data-object-type="network">네트워크 객체</button>
+            <button type="button" class="btn btn-outline-primary" data-object-type="network-group">네트워크 그룹</button>
+            <button type="button" class="btn btn-outline-primary" data-object-type="service">서비스 객체</button>
+            <button type="button" class="btn btn-outline-primary" data-object-type="service-group">서비스 그룹</button>
+        </div>
+    </div>
+
+    <div class="objects-grid">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>번호</th>
+                        <th>장비명</th>
+                        <th>객체명</th>
+                        <th>객체 유형</th>
+                        <th>값</th>
+                        <th>방화벽 유형</th>
+                        <th>마지막 동기화</th>
+                    </tr>
+                </thead>
+                <tbody id="objects-table-body">
+                    {% include 'objects/_table.html' %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="pagination-container">
+            {% include 'objects/_pagination.html' %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script src="{{ url_for('static', filename='js/modules/objects/filter.js') }}"></script>
+<script src="{{ url_for('static', filename='js/modules/objects/export.js') }}"></script>
+<script src="{{ url_for('static', filename='js/modules/objects/objects.js') }}"></script>
+{% endblock %} 

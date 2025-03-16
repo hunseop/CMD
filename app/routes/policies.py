@@ -4,6 +4,7 @@ from app import db
 import pandas as pd
 import io
 from datetime import datetime
+from app.utils.excel import generate_excel_from_dataframe, get_excel_filename
 
 policies_bp = Blueprint('policies', __name__, url_prefix='/policies')
 
@@ -277,25 +278,14 @@ def export_excel():
         
         df = pd.DataFrame(data)
         
-        # 엑셀 파일 생성
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, sheet_name='방화벽 정책', index=False)
-            
-            # 열 너비 자동 조정
-            worksheet = writer.sheets['방화벽 정책']
-            for idx, col in enumerate(df.columns):
-                max_len = max(df[col].astype(str).map(len).max(), len(col)) + 2
-                worksheet.column_dimensions[chr(65 + idx)].width = min(max_len, 50)  # 최대 너비 제한
+        # 유틸리티 함수를 사용하여 파일명 생성
+        filename = get_excel_filename('firewall_policies')
         
-        output.seek(0)
-        
-        # 파일명 생성 (현재 날짜 포함)
-        now = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f'firewall_policies_{now}.xlsx'
+        # 유틸리티 함수를 사용하여 Excel 파일 생성
+        excel_file = generate_excel_from_dataframe(df, sheet_name='방화벽 정책', auto_adjust_columns=True)
         
         return send_file(
-            output,
+            excel_file,
             as_attachment=True,
             download_name=filename,
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'

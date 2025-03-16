@@ -6,6 +6,7 @@ import pandas as pd
 import os
 from werkzeug.utils import secure_filename
 import tempfile
+from app.utils.excel import create_excel_template
 
 @devices_bp.route('/upload-excel', methods=['POST'])
 def upload_excel():
@@ -137,15 +138,8 @@ def download_excel_template():
             'password': ['password (필수)']
         }
         
-        df = pd.DataFrame(data)
-        
-        # 임시 파일로 저장
-        temp_dir = tempfile.gettempdir()
-        filepath = os.path.join(temp_dir, 'device_template.xlsx')
-        
-        # 엑셀 파일 생성
-        with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False)
+        # 유틸리티 함수를 사용하여 템플릿 파일 생성
+        filepath = create_excel_template(data, 'device_template.xlsx')
         
         # 파일 응답 생성
         return send_file(

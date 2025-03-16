@@ -51,6 +51,24 @@
                             </li>
                         </ul>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle">
+                            객체 관리
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="{{ url_for('objects.index') }}" class="dropdown-item">
+                                    방화벽 객체
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item disabled">
+                                    프록시 객체
+                                    <span class="coming-soon">준비중</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                     <li>
                         <a href="{{ url_for('main.analysis') }}" class="nav-link" data-link>
                             분석
