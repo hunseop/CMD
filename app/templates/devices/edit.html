@@ -19,63 +19,65 @@
     {% endwith %}
 
     <form method="POST" class="device-form">
-        <div class="form-group">
-            <label for="name">장비명 <span class="required">*</span></label>
-            <input type="text" id="name" name="name" value="{{ device.name }}" required>
-        </div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="name">장비명 <span class="required">*</span></label>
+                <input type="text" id="name" name="name" value="{{ device.name }}" required>
+            </div>
 
-        <div class="form-group">
-            <label for="category">분류 <span class="required">*</span></label>
-            <select id="category" name="category" required>
-                <option value="firewall" selected>방화벽</option>
-            </select>
-        </div>
+            <div class="form-group">
+                <label for="category">분류 <span class="required">*</span></label>
+                <select id="category" name="category" required>
+                    <option value="firewall" selected>방화벽</option>
+                </select>
+            </div>
 
-        <div class="form-group">
-            <label for="sub_category">세부 분류 <span class="required">*</span></label>
-            <select id="sub_category" name="sub_category" required>
-                <option value="">선택하세요</option>
-                <option value="paloalto" {% if device.sub_category == 'paloalto' %}selected{% endif %}>PaloAlto</option>
-                <option value="mf2" {% if device.sub_category == 'mf2' %}selected{% endif %}>MF2</option>
-                <option value="ngf" {% if device.sub_category == 'ngf' %}selected{% endif %}>NGF</option>
-                <option value="mock" {% if device.sub_category == 'mock' %}selected{% endif %}>Mock(테스트)</option>
-            </select>
-        </div>
+            <div class="form-group">
+                <label for="sub_category">세부 분류 <span class="required">*</span></label>
+                <select id="sub_category" name="sub_category" required>
+                    <option value="">선택하세요</option>
+                    <option value="paloalto" {% if device.sub_category == 'paloalto' %}selected{% endif %}>PaloAlto</option>
+                    <option value="mf2" {% if device.sub_category == 'mf2' %}selected{% endif %}>MF2</option>
+                    <option value="ngf" {% if device.sub_category == 'ngf' %}selected{% endif %}>NGF</option>
+                    <option value="mock" {% if device.sub_category == 'mock' %}selected{% endif %}>Mock(테스트)</option>
+                </select>
+            </div>
 
-        <div class="form-group">
-            <label for="manufacturer">제조사 <span class="required">*</span></label>
-            <input type="text" id="manufacturer" name="manufacturer" value="{{ device.manufacturer }}" required>
-        </div>
+            <div class="form-group">
+                <label for="manufacturer">제조사 <span class="required">*</span></label>
+                <input type="text" id="manufacturer" name="manufacturer" value="{{ device.manufacturer }}" required>
+            </div>
 
-        <div class="form-group">
-            <label for="model">모델명 <span class="required">*</span></label>
-            <input type="text" id="model" name="model" value="{{ device.model }}" required>
-        </div>
+            <div class="form-group">
+                <label for="model">모델명 <span class="required">*</span></label>
+                <input type="text" id="model" name="model" value="{{ device.model }}" required>
+            </div>
 
-        <div class="form-group">
-            <label for="version">버전</label>
-            <input type="text" id="version" name="version" value="{{ device.version }}">
-        </div>
+            <div class="form-group">
+                <label for="version">버전</label>
+                <input type="text" id="version" name="version" value="{{ device.version }}">
+            </div>
 
-        <div class="form-group">
-            <label for="ip_address">IP 주소 <span class="required">*</span></label>
-            <input type="text" id="ip_address" name="ip_address" value="{{ device.ip_address }}" required pattern="^(\d{1,3}\.){3}\d{1,3}$">
-        </div>
+            <div class="form-group">
+                <label for="ip_address">IP 주소 <span class="required">*</span></label>
+                <input type="text" id="ip_address" name="ip_address" value="{{ device.ip_address }}" required pattern="^(\d{1,3}\.){3}\d{1,3}$">
+            </div>
 
-        <div class="form-group">
-            <label for="port">포트</label>
-            <input type="number" id="port" name="port" value="{{ device.port }}" min="1" max="65535">
-        </div>
+            <div class="form-group">
+                <label for="port">포트</label>
+                <input type="number" id="port" name="port" value="{{ device.port }}" min="1" max="65535">
+            </div>
 
-        <div class="form-group">
-            <label for="username">접속 계정 <span class="required">*</span></label>
-            <input type="text" id="username" name="username" value="{{ device.username }}" required>
-        </div>
+            <div class="form-group">
+                <label for="username">접속 계정 <span class="required">*</span></label>
+                <input type="text" id="username" name="username" value="{{ device.username }}" required>
+            </div>
 
-        <div class="form-group">
-            <label for="password">접속 비밀번호</label>
-            <input type="password" id="password" name="password" placeholder="변경하려면 입력하세요">
-            <small>비밀번호를 변경하지 않으려면 비워두세요.</small>
+            <div class="form-group">
+                <label for="password">접속 비밀번호</label>
+                <input type="password" id="password" name="password" placeholder="변경하려면 입력하세요">
+                <small>비밀번호를 변경하지 않으려면 비워두세요.</small>
+            </div>
         </div>
 
         <div class="form-actions">
