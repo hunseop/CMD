@@ -1,27 +1,63 @@
 /**
+ * 장비 관리 페이지 모듈
+ * 
+ * 이 파일은 장비 관리 페이지의 모든 기능을 처리합니다.
+ * - 장비 목록 조회 및 검색
+ * - 장비 삭제 모달
+ * - 엑셀 업로드 모달
+ * - 장비 동기화 모달
+ * - 탭 기능
+ */
+
+// 유틸리티 함수
+/**
+ * 버튼 상태 업데이트
+ * @param {HTMLElement} button - 업데이트할 버튼 요소
+ * @param {boolean} isLoading - 로딩 중 여부
+ * @param {string} loadingText - 로딩 중 표시할 텍스트
+ * @param {string} defaultText - 기본 텍스트
+ */
+function updateButtonState(button, isLoading, loadingText, defaultText) {
+    if (!button) return;
+    
+    button.disabled = isLoading;
+    button.textContent = isLoading ? loadingText : defaultText;
+}
+
+/**
+ * 결과 메시지 표시
+ * @param {HTMLElement} container - 결과 메시지 컨테이너
+ * @param {HTMLElement} messageElement - 메시지 요소
+ * @param {string} message - 표시할 메시지
+ * @param {boolean} isSuccess - 성공 여부
+ */
+function showResultMessage(container, messageElement, message, isSuccess) {
+    if (!container || !messageElement) return;
+    
+    container.style.display = 'block';
+    messageElement.textContent = message;
+    messageElement.className = isSuccess ? 'text-success' : 'text-danger';
+}
+
+/**
  * 장비 관리 페이지 초기화
  */
 function initDevicesPage() {
-    // 테이블 검색 초기화
     if (window.SearchModule) {
         window.SearchModule.initTableSearch('deviceSearch', '.data-table');
     }
     
-    // IP 주소 유효성 검사 초기화
     if (window.ValidationModule) {
         window.ValidationModule.initIpAddressValidation();
     }
     
-    // 알림 메시지 자동 숨김 초기화
     if (window.AlertsModule) {
         window.AlertsModule.initAutoHideAlerts();
     }
     
-    // 삭제 모달 초기화
     initDeleteModal();
-    
-    // 엑셀 업로드 모달 초기화
     initUploadModal();
+    initPaginationAndSearch();
 }
 
 /**
@@ -53,22 +89,18 @@ function initDeleteModal() {
  */
 function initUploadModal() {
     if (window.ModalModule) {
-        const uploadModal = window.ModalModule.initModal('uploadModal', {
+        window.ModalModule.initModal('uploadModal', {
             openSelector: '#uploadExcelBtn',
             cancelSelector: '#cancelUpload',
             onOpen: function() {
-                // 모달 열릴 때 초기화
                 document.getElementById('excelFile').value = '';
                 document.getElementById('uploadResult').style.display = 'none';
             }
         });
         
-        // 업로드 버튼 이벤트
         const submitBtn = document.getElementById('submitUpload');
         if (submitBtn) {
-            submitBtn.addEventListener('click', function() {
-                uploadExcelFile();
-            });
+            submitBtn.addEventListener('click', uploadExcelFile);
         }
     }
 }
@@ -82,6 +114,7 @@ function uploadExcelFile() {
     const resultMessage = document.getElementById('resultMessage');
     const errorList = document.getElementById('errorList');
     const errorListUl = errorList.querySelector('ul');
+    const submitBtn = document.getElementById('submitUpload');
     
     if (!fileInput.files || fileInput.files.length === 0) {
         alert('파일을 선택해주세요.');
@@ -92,31 +125,21 @@ function uploadExcelFile() {
     const formData = new FormData();
     formData.append('file', file);
     
-    // 로딩 표시
-    const submitBtn = document.getElementById('submitUpload');
-    submitBtn.disabled = true;
-    submitBtn.textContent = '업로드 중...';
+    updateButtonState(submitBtn, true, '업로드 중...', '업로드');
     
-    // 결과 영역 초기화
     resultDiv.style.display = 'none';
     errorList.style.display = 'none';
     errorListUl.innerHTML = '';
     
-    // AJAX 요청
     fetch('/devices/upload-excel', {
         method: 'POST',
         body: formData
     })
     .then(response => response.json())
     .then(data => {
-        // 결과 표시
-        resultDiv.style.display = 'block';
-        resultMessage.textContent = data.message;
+        showResultMessage(resultDiv, resultMessage, data.message, data.success);
         
         if (data.success) {
-            resultMessage.className = 'text-success';
-            
-            // 오류가 있으면 표시
             if (data.errors && data.errors.length > 0) {
                 errorList.style.display = 'block';
                 data.errors.forEach(error => {
@@ -126,23 +149,14 @@ function uploadExcelFile() {
                 });
             }
             
-            // 3초 후 페이지 새로고침
-            setTimeout(() => {
-                window.location.reload();
-            }, 3000);
-        } else {
-            resultMessage.className = 'text-danger';
+            setTimeout(() => window.location.reload(), 3000);
         }
     })
     .catch(error => {
-        resultDiv.style.display = 'block';
-        resultMessage.textContent = '업로드 중 오류가 발생했습니다: ' + error.message;
-        resultMessage.className = 'text-danger';
+        showResultMessage(resultDiv, resultMessage, '업로드 중 오류가 발생했습니다: ' + error.message, false);
     })
     .finally(() => {
-        // 로딩 표시 제거
-        submitBtn.disabled = false;
-        submitBtn.textContent = '업로드';
+        updateButtonState(submitBtn, false, '업로드 중...', '업로드');
     });
 }
 
@@ -155,11 +169,9 @@ function initTabs() {
 
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
-            // 활성 탭 버튼 변경
             tabButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
 
-            // 활성 탭 내용 변경
             const tabId = button.getAttribute('data-tab');
             tabContents.forEach(content => {
                 content.classList.remove('active');
@@ -188,21 +200,18 @@ function initSyncModal() {
         const syncDeviceName = document.getElementById('syncDeviceName');
         const syncForm = document.getElementById('syncForm');
         const selectAllCheckbox = document.getElementById('selectAll');
-        const checkboxes = syncForm.querySelectorAll('input[name="sync_type"]');
+        const checkboxes = syncForm ? syncForm.querySelectorAll('input[name="sync_type"]') : [];
         
-        // 전체 선택/해제 이벤트
-        if (selectAllCheckbox) {
+        if (selectAllCheckbox && checkboxes.length > 0) {
+            // 전체 선택/해제 이벤트
             selectAllCheckbox.addEventListener('change', function() {
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = this.checked;
-                });
+                checkboxes.forEach(checkbox => checkbox.checked = this.checked);
             });
 
             // 개별 체크박스 변경 시 전체 선택 상태 업데이트
             checkboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
-                    selectAllCheckbox.checked = Array.from(checkboxes)
-                        .every(cb => cb.checked);
+                    selectAllCheckbox.checked = Array.from(checkboxes).every(cb => cb.checked);
                 });
             });
         }
@@ -215,13 +224,12 @@ function initSyncModal() {
                     const deviceId = button.getAttribute('data-id');
                     const deviceName = button.getAttribute('data-name');
                     
-                    syncDeviceName.textContent = deviceName;
-                    syncForm.action = `/devices/${deviceId}/sync`;
+                    if (syncDeviceName) syncDeviceName.textContent = deviceName;
+                    if (syncForm) syncForm.action = `/devices/${deviceId}/sync`;
                 }
             }
         });
         
-        // 동기화 버튼 이벤트
         const submitBtn = document.getElementById('submitSync');
         if (submitBtn) {
             submitBtn.addEventListener('click', submitSyncForm);
@@ -236,8 +244,10 @@ function submitSyncForm() {
     const form = document.getElementById('syncForm');
     const resultDiv = document.getElementById('syncResult');
     const resultMessage = document.getElementById('syncResultMessage');
+    const submitBtn = document.getElementById('submitSync');
     
-    // 선택된 동기화 항목 확인
+    if (!form) return;
+    
     const selectedTypes = Array.from(form.querySelectorAll('input[name="sync_type"]:checked'))
         .map(input => input.value);
     
@@ -246,29 +256,18 @@ function submitSyncForm() {
         return;
     }
     
-    // 로딩 표시
-    const submitBtn = document.getElementById('submitSync');
-    submitBtn.disabled = true;
-    submitBtn.textContent = '동기화 중...';
+    updateButtonState(submitBtn, true, '동기화 중...', '동기화');
     
-    // FormData 생성
     const formData = new FormData();
-    selectedTypes.forEach(type => {
-        formData.append('sync_type', type);
-    });
+    selectedTypes.forEach(type => formData.append('sync_type', type));
     
-    // AJAX 요청
     fetch(form.action, {
         method: 'POST',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'  // AJAX 요청임을 명시
-        },
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
         body: formData
     })
     .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
             throw new TypeError("서버가 JSON을 반환하지 않았습니다!");
@@ -276,27 +275,74 @@ function submitSyncForm() {
         return response.json();
     })
     .then(data => {
-        resultDiv.style.display = 'block';
-        resultMessage.textContent = data.message;
-        resultMessage.className = data.success ? 'text-success' : 'text-danger';
-        
+        showResultMessage(resultDiv, resultMessage, data.message, data.success);
         if (data.success) {
-            // 3초 후 페이지 새로고침
-            setTimeout(() => {
-                window.location.reload();
-            }, 3000);
+            setTimeout(() => window.location.reload(), 3000);
         }
     })
     .catch(error => {
-        resultDiv.style.display = 'block';
-        resultMessage.textContent = '동기화 중 오류가 발생했습니다: ' + error.message;
-        resultMessage.className = 'text-danger';
+        showResultMessage(resultDiv, resultMessage, '동기화 중 오류가 발생했습니다: ' + error.message, false);
     })
     .finally(() => {
-        // 로딩 표시 제거
-        submitBtn.disabled = false;
-        submitBtn.textContent = '동기화';
+        updateButtonState(submitBtn, false, '동기화 중...', '동기화');
     });
+}
+
+/**
+ * 페이지네이션 및 검색 이벤트 초기화
+ */
+function initPaginationAndSearch() {
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('.page-link')) {
+            e.preventDefault();
+            const page = e.target.dataset.page;
+            const searchQuery = document.getElementById('deviceSearch')?.value || '';
+            loadDevices(page, searchQuery);
+        }
+    });
+
+    const searchInput = document.getElementById('deviceSearch');
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => loadDevices(1, this.value), 300);
+        });
+    }
+}
+
+/**
+ * 장비 목록 로드
+ * @param {number} page - 페이지 번호
+ * @param {string} search - 검색어
+ */
+function loadDevices(page, search = '') {
+    const tableBody = document.getElementById('devices-table-body');
+    const paginationContainer = document.querySelector('.pagination-container');
+    
+    if (!tableBody || !paginationContainer) return;
+    
+    fetch(`/devices/list?page=${page}&search=${encodeURIComponent(search)}`, {
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+    })
+    .then(data => {
+        tableBody.innerHTML = data.html;
+        paginationContainer.innerHTML = data.pagination;
+        
+        const url = new URL(window.location);
+        url.searchParams.set('page', page);
+        if (search) {
+            url.searchParams.set('search', search);
+        } else {
+            url.searchParams.delete('search');
+        }
+        window.history.replaceState({}, '', url);
+    })
+    .catch(error => console.error('장비 목록 로드 중 오류 발생:', error));
 }
 
 // DOMContentLoaded 이벤트에서 초기화
@@ -309,60 +355,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.querySelector('.device-detail-container')) {
         initTabs();
     }
-
-    // 페이지네이션 처리
-    document.addEventListener('click', function(e) {
-        if (e.target.matches('.page-link')) {
-            e.preventDefault();
-            const page = e.target.dataset.page;
-            const searchQuery = document.getElementById('deviceSearch').value;
-            loadDevices(page, searchQuery);
-        }
-    });
-
-    // 검색 처리
-    const searchInput = document.getElementById('deviceSearch');
-    let searchTimeout;
-    
-    searchInput.addEventListener('input', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            loadDevices(1, this.value);
-        }, 300);
-    });
-
-    function loadDevices(page, search = '') {
-        const tableBody = document.getElementById('devices-table-body');
-        const paginationContainer = document.querySelector('.pagination-container');
-        
-        fetch(`/devices/list?page=${page}&search=${encodeURIComponent(search)}`, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            // 테이블 내용 업데이트
-            tableBody.innerHTML = data.html;
-            
-            // 페이지네이션 업데이트
-            paginationContainer.innerHTML = data.pagination;
-            
-            // URL 업데이트 (브라우저 히스토리는 변경하지 않음)
-            const url = new URL(window.location);
-            url.searchParams.set('page', page);
-            if (search) {
-                url.searchParams.set('search', search);
-            } else {
-                url.searchParams.delete('search');
-            }
-            window.history.replaceState({}, '', url);
-        })
-        .catch(error => {
-            console.error('Error loading devices:', error);
-        });
-    }
 });
 
 // 전역 스코프로 내보내기
 window.initDevicesPage = initDevicesPage;
+window.confirmDelete = confirmDelete;
