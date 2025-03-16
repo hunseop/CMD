@@ -131,6 +131,8 @@ export function initPagination(onPageChange) {
     function resetState() {
         // 페이지 크기가 변경된 경우에만 첫 페이지로 이동
         const perPageSelect = document.getElementById('perPage');
+        
+        // perPage 요소가 있는 경우
         if (perPageSelect) {
             const selectedPageSize = parseInt(perPageSelect.value);
             if (!isNaN(selectedPageSize) && selectedPageSize > 0 && selectedPageSize !== pageSize) {
@@ -138,6 +140,18 @@ export function initPagination(onPageChange) {
                 pageSize = selectedPageSize;
                 localStorage.setItem('pageSize', pageSize);
                 currentPage = 1; // 페이지 크기가 변경된 경우에만 첫 페이지로 이동
+            }
+        } 
+        // perPage 요소가 없는 경우 localStorage에서 확인
+        else {
+            const savedPageSize = localStorage.getItem('pageSize');
+            if (savedPageSize) {
+                const newPageSize = parseInt(savedPageSize);
+                if (!isNaN(newPageSize) && newPageSize > 0 && newPageSize !== pageSize) {
+                    console.log(`페이지 크기 변경(localStorage): ${pageSize} -> ${newPageSize}`);
+                    pageSize = newPageSize;
+                    currentPage = 1;
+                }
             }
         }
     }

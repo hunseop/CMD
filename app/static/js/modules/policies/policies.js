@@ -78,19 +78,16 @@ export function initPolicies() {
             const params = {
                 page: 1,
                 pageSize: 1000, // 최대 페이지 크기
-                filters: filters.getActiveFilters()
+                filters: filters.getActiveFilters(),
+                deviceId, // 직접 파라미터로 전달
+                status,
+                search
             };
             
             console.log('엑셀 내보내기용 데이터 로드 파라미터:', params);
             
-            // 정책 데이터 가져오기
+            // 정책 데이터 가져오기 (API 함수가 필요한 모든 정보를 반환)
             const data = await api.getPolicies(params);
-            
-            // 필터 정보 추가
-            data.filters = filters.getActiveFilters();
-            data.device_id = deviceId;
-            data.status = status;
-            data.search = search;
             
             // 로딩 숨기기
             hideLoading();

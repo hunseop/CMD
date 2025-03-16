@@ -115,19 +115,32 @@ export function initFilters(onFilterChange) {
         const field = filterField.value;
         filterOperator.innerHTML = ''; // 기존 옵션 초기화
         
+        // 필드 유형에 따라 적절한 연산자 옵션 추가
+        const operators = getOperatorsForField(field);
+        operators.forEach(op => {
+            addOperatorOption(op.value, op.text);
+        });
+    }
+    
+    // 필드 유형에 따른 연산자 옵션 가져오기
+    function getOperatorsForField(field) {
+        // 선택형 필드 (동작, 사용여부, 상태)는 equals/not_equals만 사용
         if (field === 'action' || field === 'usage_status' || field === 'enable') {
-            // 동작, 사용여부, 상태 필드는 equals/not_equals만 사용
-            addOperatorOption('equals', '일치');
-            addOperatorOption('not_equals', '불일치');
-        } else {
-            // 다른 필드들은 모든 연산자 사용
-            addOperatorOption('contains', '포함');
-            addOperatorOption('not_contains', '미포함');
-            addOperatorOption('equals', '일치');
-            addOperatorOption('not_equals', '불일치');
-            addOperatorOption('starts_with', '시작');
-            addOperatorOption('ends_with', '끝');
+            return [
+                { value: 'equals', text: '일치' },
+                { value: 'not_equals', text: '불일치' }
+            ];
         }
+        
+        // 다른 필드들은 모든 연산자 사용
+        return [
+            { value: 'contains', text: '포함' },
+            { value: 'not_contains', text: '미포함' },
+            { value: 'equals', text: '일치' },
+            { value: 'not_equals', text: '불일치' },
+            { value: 'starts_with', text: '시작' },
+            { value: 'ends_with', text: '끝' }
+        ];
     }
     
     // 연산자 옵션 추가
@@ -155,48 +168,22 @@ export function initFilters(onFilterChange) {
         // 새 필터 값 요소 생성
         let newValueElement;
         
+        // 필드 유형에 따라 적절한 입력 요소 생성
         if (field === 'action') {
-            // 동작 선택 필드
-            newValueElement = document.createElement('select');
-            newValueElement.className = 'filter-value';
-            const options = [
+            newValueElement = createSelectElement([
                 { value: 'allow', text: '허용' },
                 { value: 'deny', text: '차단' }
-            ];
-            options.forEach(opt => {
-                const option = document.createElement('option');
-                option.value = opt.value;
-                option.textContent = opt.text;
-                newValueElement.appendChild(option);
-            });
+            ]);
         } else if (field === 'usage_status') {
-            // 사용 여부 선택 필드
-            newValueElement = document.createElement('select');
-            newValueElement.className = 'filter-value';
-            const options = [
+            newValueElement = createSelectElement([
                 { value: 'true', text: '사용' },
                 { value: 'false', text: '미사용' }
-            ];
-            options.forEach(opt => {
-                const option = document.createElement('option');
-                option.value = opt.value;
-                option.textContent = opt.text;
-                newValueElement.appendChild(option);
-            });
+            ]);
         } else if (field === 'enable') {
-            // 활성화 상태 선택 필드
-            newValueElement = document.createElement('select');
-            newValueElement.className = 'filter-value';
-            const options = [
+            newValueElement = createSelectElement([
                 { value: 'true', text: '활성화' },
                 { value: 'false', text: '비활성화' }
-            ];
-            options.forEach(opt => {
-                const option = document.createElement('option');
-                option.value = opt.value;
-                option.textContent = opt.text;
-                newValueElement.appendChild(option);
-            });
+            ]);
         } else {
             // 일반 텍스트 입력 필드
             newValueElement = document.createElement('input');
@@ -209,6 +196,21 @@ export function initFilters(onFilterChange) {
         if (oldValueElement.parentElement) {
             oldValueElement.parentElement.replaceChild(newValueElement, oldValueElement);
         }
+    }
+    
+    // 선택 요소 생성 헬퍼 함수
+    function createSelectElement(options) {
+        const select = document.createElement('select');
+        select.className = 'filter-value';
+        
+        options.forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt.value;
+            option.textContent = opt.text;
+            select.appendChild(option);
+        });
+        
+        return select;
     }
     
     // 필터 적용
@@ -290,7 +292,7 @@ export function initFilters(onFilterChange) {
             }
             
             const operatorLabel = getOperatorLabel(filter.operator);
-            const valueLabel = getValueLabel(filter.field, filter.value);
+            const valueLabel = formatFilterValue(filter.field, filter.value);
             
             let filterText = '';
             
@@ -346,8 +348,13 @@ export function initFilters(onFilterChange) {
         return labels[operator] || operator;
     }
     
-    // 값 레이블 가져오기
-    function getValueLabel(field, value) {
+    /**
+     * 필터 값 표시 형식 변환
+     * @param {string} field - 필드명
+     * @param {string} value - 필터 값
+     * @returns {string} - 표시용 값
+     */
+    function formatFilterValue(field, value) {
         if (field === 'action') {
             return value === 'allow' ? '허용' : '차단';
         } else if (field === 'usage_status') {
@@ -380,23 +387,6 @@ export function initFilters(onFilterChange) {
         if (typeof callback === 'function') {
             callback();
         }
-    }
-    
-    /**
-     * 필터 값 표시 형식 변환
-     * @param {string} field - 필드명
-     * @param {string} value - 필터 값
-     * @returns {string} - 표시용 값
-     */
-    function formatFilterValue(field, value) {
-        if (field === 'action') {
-            return value === 'allow' ? '허용' : '차단';
-        } else if (field === 'usage_status') {
-            return value === 'true' ? '사용' : '미사용';
-        } else if (field === 'enable') {
-            return value === 'true' ? '활성화' : '비활성화';
-        }
-        return value;
     }
     
     // 공개 메서드 반환

@@ -13,6 +13,9 @@ export function initAPI() {
      * @param {number} params.page - 페이지 번호
      * @param {number} params.pageSize - 페이지 크기
      * @param {Array} params.filters - 필터 배열
+     * @param {string} params.deviceId - 장비 ID (선택적)
+     * @param {string} params.status - 상태 필터 (선택적)
+     * @param {string} params.search - 검색어 (선택적)
      * @returns {Promise<Object>} - 정책 목록 응답
      */
     async function getPolicies(params = {}) {
@@ -27,10 +30,10 @@ export function initAPI() {
             // 파라미터 병합
             const queryParams = { ...defaultParams, ...params };
             
-            // 검색 파라미터 가져오기
-            const deviceId = document.getElementById('deviceFilter')?.value || '';
-            const status = document.getElementById('statusFilter')?.value || '';
-            const search = document.getElementById('policySearch')?.value || '';
+            // 검색 파라미터 가져오기 (파라미터로 전달되지 않은 경우에만 DOM에서 가져옴)
+            const deviceId = queryParams.deviceId || document.getElementById('deviceFilter')?.value || '';
+            const status = queryParams.status || document.getElementById('statusFilter')?.value || '';
+            const search = queryParams.search || document.getElementById('policySearch')?.value || '';
             
             // API 요청 데이터 구성
             const requestData = {
@@ -80,7 +83,11 @@ export function initAPI() {
                 html: data.html || '',
                 pagination: data.pagination || '',
                 items: data.items || [],
-                total: data.total || 0
+                total: data.total || 0,
+                filters: queryParams.filters,
+                device_id: deviceId,
+                status: status,
+                search: search
             };
         } catch (error) {
             console.error('정책 목록 조회 중 오류 발생:', error);
