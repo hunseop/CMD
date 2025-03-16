@@ -4,25 +4,187 @@
 
 {% block content %}
 <div class="dashboard-container">
-    <h2>시스템 현황</h2>
+    <h2>시스템 현황 <span class="device-count">총 {{ data.devices.total }}대</span></h2>
     <div class="dashboard-grid">
-        <div class="card">
-            <h3>장비 상태</h3>
-            <div class="status-summary">
-                <p>전체 장비: <span>0</span></p>
-                <p>정상: <span>0</span></p>
-                <p>경고: <span>0</span></p>
-                <p>오류: <span>0</span></p>
-            </div>
-        </div>
         <div class="card">
             <h3>정책 현황</h3>
             <div class="policy-summary">
-                <p>전체 정책: <span>0</span></p>
-                <p>활성 정책: <span>0</span></p>
-                <p>중복 정책: <span>0</span></p>
+                <p>전체 정책: <span>{{ data.policies.total }}</span></p>
+                <p>활성 정책: <span>{{ data.policies.active }}</span></p>
+                <p>비활성 정책: <span>{{ data.policies.inactive }}</span></p>
+                <p>허용 정책: <span>{{ data.policies.allow }}</span></p>
+                <p>차단 정책: <span>{{ data.policies.deny }}</span></p>
+            </div>
+        </div>
+        <div class="card">
+            <h3>객체 현황</h3>
+            <div class="object-summary">
+                <p>전체 객체: <span>{{ data.objects.total }}</span></p>
+                <p>네트워크 객체: <span>{{ data.objects.network }}</span></p>
+                <p>네트워크 그룹: <span>{{ data.objects.network_group }}</span></p>
+                <p>서비스 객체: <span>{{ data.objects.service }}</span></p>
+                <p>서비스 그룹: <span>{{ data.objects.service_group }}</span></p>
             </div>
         </div>
     </div>
+
+    <div class="page-header mt-4">
+        <h2>장비별 현황</h2>
+    </div>
+    
+    <div class="devices-grid">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="name">장비명</th>
+                        <th class="sortable" data-sort="type">장비 유형</th>
+                        <th class="sortable" data-sort="policies">정책 수</th>
+                        <th class="sortable" data-sort="active">활성 정책</th>
+                        <th class="sortable" data-sort="inactive">비활성 정책</th>
+                        <th class="sortable" data-sort="allow">허용 정책</th>
+                        <th class="sortable" data-sort="deny">차단 정책</th>
+                        <th class="sortable" data-sort="objects">객체 수</th>
+                        <th class="sortable" data-sort="network">네트워크 객체</th>
+                        <th class="sortable" data-sort="network_group">네트워크 그룹</th>
+                        <th class="sortable" data-sort="service">서비스 객체</th>
+                        <th class="sortable" data-sort="service_group">서비스 그룹</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if data.device_stats %}
+                        {% for device in data.device_stats %}
+                            <tr>
+                                <td>{{ device.name }}</td>
+                                <td>{{ device.sub_category }}</td>
+                                <td>{{ device.policies.total }}</td>
+                                <td>{{ device.policies.active }}</td>
+                                <td>{{ device.policies.inactive }}</td>
+                                <td>{{ device.policies.allow }}</td>
+                                <td>{{ device.policies.deny }}</td>
+                                <td>{{ device.objects.total }}</td>
+                                <td>{{ device.objects.network }}</td>
+                                <td>{{ device.objects.network_group }}</td>
+                                <td>{{ device.objects.service }}</td>
+                                <td>{{ device.objects.service_group }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="12" class="empty-message">등록된 장비가 없습니다.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+
+<style>
+.dashboard-container {
+    padding: 20px;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.card h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 18px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.status-summary p, .policy-summary p, .object-summary p {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+
+.status-summary span, .policy-summary span, .object-summary span {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.mt-4 {
+    margin-top: 1.5rem;
+}
+
+.device-count {
+    font-size: 16px;
+    font-weight: normal;
+    color: #6c757d;
+    margin-left: 10px;
+}
+
+/* 테이블 정렬 관련 스타일 */
+.sortable {
+    cursor: pointer;
+    position: relative;
+}
+
+.sortable:after {
+    content: '↕';
+    position: absolute;
+    right: 8px;
+    color: #ccc;
+}
+
+.sortable.asc:after {
+    content: '↑';
+    color: #333;
+}
+
+.sortable.desc:after {
+    content: '↓';
+    color: #333;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 테이블 정렬 기능
+    const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent;
+    
+    const comparer = (idx, asc) => (a, b) => {
+        const v1 = getCellValue(asc ? a : b, idx);
+        const v2 = getCellValue(asc ? b : a, idx);
+        
+        // 숫자인 경우 숫자 비교, 그렇지 않으면 문자열 비교
+        return v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) 
+            ? v1 - v2 
+            : v1.toString().localeCompare(v2);
+    };
+    
+    document.querySelectorAll('th.sortable').forEach(th => {
+        th.addEventListener('click', function() {
+            const table = th.closest('table');
+            const tbody = table.querySelector('tbody');
+            Array.from(tbody.querySelectorAll('tr'))
+                .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+                .forEach(tr => tbody.appendChild(tr));
+            
+            // 정렬 방향 표시
+            table.querySelectorAll('th').forEach(el => {
+                el.classList.remove('asc', 'desc');
+            });
+            th.classList.toggle('asc', this.asc);
+            th.classList.toggle('desc', !this.asc);
+        });
+    });
+});
+</script>
 {% endblock %} 
