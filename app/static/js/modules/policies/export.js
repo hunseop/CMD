@@ -2,6 +2,8 @@
  * 정책 엑셀 내보내기 관련 기능을 담당하는 모듈
  */
 
+import { showLoading, hideLoading } from './utils.js';
+
 /**
  * 엑셀 내보내기 모듈 초기화
  * @param {Function} getPoliciesData - 정책 데이터를 가져오는 함수
@@ -133,66 +135,6 @@ export function initExport(getPoliciesData) {
             }
             
             hideLoading();
-        }
-    }
-    
-    /**
-     * 로딩 표시
-     */
-    function showLoading() {
-        const loadingEl = document.getElementById('loading');
-        if (loadingEl) {
-            loadingEl.style.display = 'flex';
-        } else {
-            // 로딩 요소가 없는 경우 생성
-            const loading = document.createElement('div');
-            loading.id = 'loading';
-            loading.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.5);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 9999;
-            `;
-            
-            const spinner = document.createElement('div');
-            spinner.className = 'spinner';
-            spinner.style.cssText = `
-                border: 4px solid #f3f3f3;
-                border-top: 4px solid #3498db;
-                border-radius: 50%;
-                width: 50px;
-                height: 50px;
-                animation: spin 2s linear infinite;
-            `;
-            
-            // 애니메이션 스타일 추가
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            `;
-            document.head.appendChild(style);
-            
-            loading.appendChild(spinner);
-            document.body.appendChild(loading);
-        }
-    }
-    
-    /**
-     * 로딩 숨기기
-     */
-    function hideLoading() {
-        const loadingEl = document.getElementById('loading');
-        if (loadingEl) {
-            loadingEl.style.display = 'none';
         }
     }
     

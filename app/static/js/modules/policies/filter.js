@@ -2,6 +2,8 @@
  * 정책 필터 관련 기능을 담당하는 모듈
  */
 
+import { convertStatus } from './utils.js';
+
 // 전역 변수
 let activeFilters = [];
 
@@ -378,6 +380,23 @@ export function initFilters(onFilterChange) {
         if (typeof callback === 'function') {
             callback();
         }
+    }
+    
+    /**
+     * 필터 값 표시 형식 변환
+     * @param {string} field - 필드명
+     * @param {string} value - 필터 값
+     * @returns {string} - 표시용 값
+     */
+    function formatFilterValue(field, value) {
+        if (field === 'action') {
+            return value === 'allow' ? '허용' : '차단';
+        } else if (field === 'usage_status') {
+            return value === 'true' ? '사용' : '미사용';
+        } else if (field === 'enable') {
+            return value === 'true' ? '활성화' : '비활성화';
+        }
+        return value;
     }
     
     // 공개 메서드 반환
