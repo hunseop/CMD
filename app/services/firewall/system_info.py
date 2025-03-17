@@ -2,11 +2,13 @@ from app import db
 from app.models import FirewallSystemInfo
 from app.services.firewall.common import get_device_and_collector, create_sync_history, handle_sync_exception
 
-def sync_system_info(device_id):
+def sync_system_info(device_id, is_batch=False, batch_id=None):
     """방화벽 시스템 정보를 동기화합니다.
     
     Args:
         device_id: 장비 ID
+        is_batch: 배치 동기화 여부
+        batch_id: 배치 동기화 ID
         
     Returns:
         tuple: (success, message)
@@ -42,11 +44,17 @@ def sync_system_info(device_id):
             device_id=device.id,
             sync_type='system_info',
             status='success',
-            message='시스템 정보를 동기화했습니다.'
+            message='시스템 정보를 동기화했습니다.',
+            is_batch=is_batch,
+            batch_id=batch_id
         )
         db.session.commit()
         
         return True, '시스템 정보를 동기화했습니다.'
     
     except Exception as e:
-        return handle_sync_exception(device.id, 'system_info', e) 
+        # 예외 처리 시에도 배치 정보 전달
+        if is_batch and batch_id:
+            return handle_sync_exception(device.id, 'system_info', e, is_batch, batch_id)
+        else:
+            return handle_sync_exception(device.id, 'system_info', e) 

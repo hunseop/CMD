@@ -2,11 +2,13 @@ from app import db
 from app.models import FirewallPolicy
 from app.services.firewall.common import get_device_and_collector, create_sync_history, handle_sync_exception
 
-def sync_firewall_policies(device_id):
+def sync_firewall_policies(device_id, is_batch=False, batch_id=None):
     """방화벽 정책을 동기화합니다.
     
     Args:
         device_id: 장비 ID
+        is_batch: 배치 동기화 여부
+        batch_id: 배치 동기화 ID
         
     Returns:
         tuple: (success, message)
@@ -48,11 +50,17 @@ def sync_firewall_policies(device_id):
             device_id=device.id,
             sync_type='security_rules',
             status='success',
-            message=f'{len(policies_df)} 개의 정책을 동기화했습니다.'
+            message=f'{len(policies_df)} 개의 정책을 동기화했습니다.',
+            is_batch=is_batch,
+            batch_id=batch_id
         )
         db.session.commit()
         
         return True, f'{len(policies_df)} 개의 정책을 동기화했습니다.'
     
     except Exception as e:
-        return handle_sync_exception(device.id, 'security_rules', e) 
+        # 예외 처리 시에도 배치 정보 전달
+        if is_batch and batch_id:
+            return handle_sync_exception(device.id, 'security_rules', e, is_batch, batch_id)
+        else:
+            return handle_sync_exception(device.id, 'security_rules', e) 

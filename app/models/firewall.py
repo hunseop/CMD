@@ -146,5 +146,9 @@ class SyncHistory(db.Model):
     message = db.Column(db.Text, nullable=True, comment='결과 메시지')
     created_at = db.Column(db.DateTime, default=datetime.now)
     
+    # 배치 동기화 관련 필드 추가
+    is_batch = db.Column(db.Boolean, default=False, comment='배치 동기화 여부')
+    batch_id = db.Column(db.String(36), nullable=True, comment='배치 동기화 ID (UUID)')
+    
     def __repr__(self):
         return f'<SyncHistory {self.sync_type} for device_id={self.device_id} at {self.created_at}>' 

@@ -3,12 +3,14 @@ from app.models import FirewallPolicy
 from app.services.firewall.common import get_device_and_collector, create_sync_history, handle_sync_exception
 from datetime import datetime
 
-def sync_usage_logs(device_id, days=90):
+def sync_usage_logs(device_id, days=90, is_batch=False, batch_id=None):
     """방화벽 정책 사용 이력을 동기화합니다.
     
     Args:
         device_id: 장비 ID
         days: 조회할 기간(일), 기본값 90일
+        is_batch: 배치 동기화 여부
+        batch_id: 배치 동기화 ID
         
     Returns:
         tuple: (success, message)
@@ -47,11 +49,17 @@ def sync_usage_logs(device_id, days=90):
             device_id=device.id,
             sync_type='usage_logs',
             status='success',
-            message=f'{len(usage_logs_df)} 개의 정책 사용 이력을 동기화했습니다.'
+            message=f'{len(usage_logs_df)} 개의 정책 사용 이력을 동기화했습니다.',
+            is_batch=is_batch,
+            batch_id=batch_id
         )
         db.session.commit()
         
         return True, f'{len(usage_logs_df)} 개의 정책 사용 이력을 동기화했습니다.'
     
     except Exception as e:
-        return handle_sync_exception(device.id, 'usage_logs', e) 
+        # 예외 처리 시에도 배치 정보 전달
+        if is_batch and batch_id:
+            return handle_sync_exception(device.id, 'usage_logs', e, is_batch, batch_id)
+        else:
+            return handle_sync_exception(device.id, 'usage_logs', e) 

@@ -2,11 +2,13 @@ from app import db
 from app.models import FirewallServiceObject, FirewallServiceGroup
 from app.services.firewall.common import get_device_and_collector, create_sync_history, handle_sync_exception
 
-def sync_service_objects(device_id):
+def sync_service_objects(device_id, is_batch=False, batch_id=None):
     """방화벽 서비스 객체를 동기화합니다.
     
     Args:
         device_id: 장비 ID
+        is_batch: 배치 동기화 여부
+        batch_id: 배치 동기화 ID
         
     Returns:
         tuple: (success, message)
@@ -39,20 +41,28 @@ def sync_service_objects(device_id):
             device_id=device.id,
             sync_type='service_objects',
             status='success',
-            message=f'{len(objects_df)} 개의 서비스 객체를 동기화했습니다.'
+            message=f'{len(objects_df)} 개의 서비스 객체를 동기화했습니다.',
+            is_batch=is_batch,
+            batch_id=batch_id
         )
         db.session.commit()
         
         return True, f'{len(objects_df)} 개의 서비스 객체를 동기화했습니다.'
     
     except Exception as e:
-        return handle_sync_exception(device.id, 'service_objects', e)
+        # 예외 처리 시에도 배치 정보 전달
+        if is_batch and batch_id:
+            return handle_sync_exception(device.id, 'service_objects', e, is_batch, batch_id)
+        else:
+            return handle_sync_exception(device.id, 'service_objects', e)
 
-def sync_service_groups(device_id):
-    """방화벽 서비스 그룹 객체를 동기화합니다.
+def sync_service_groups(device_id, is_batch=False, batch_id=None):
+    """방화벽 서비스 그룹을 동기화합니다.
     
     Args:
         device_id: 장비 ID
+        is_batch: 배치 동기화 여부
+        batch_id: 배치 동기화 ID
         
     Returns:
         tuple: (success, message)
@@ -84,11 +94,17 @@ def sync_service_groups(device_id):
             device_id=device.id,
             sync_type='service_groups',
             status='success',
-            message=f'{len(groups_df)} 개의 서비스 그룹을 동기화했습니다.'
+            message=f'{len(groups_df)} 개의 서비스 그룹을 동기화했습니다.',
+            is_batch=is_batch,
+            batch_id=batch_id
         )
         db.session.commit()
         
         return True, f'{len(groups_df)} 개의 서비스 그룹을 동기화했습니다.'
     
     except Exception as e:
-        return handle_sync_exception(device.id, 'service_groups', e) 
+        # 예외 처리 시에도 배치 정보 전달
+        if is_batch and batch_id:
+            return handle_sync_exception(device.id, 'service_groups', e, is_batch, batch_id)
+        else:
+            return handle_sync_exception(device.id, 'service_groups', e) 
