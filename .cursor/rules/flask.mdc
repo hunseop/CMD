@@ -1,0 +1,165 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# **Flask API Development Guidelines for CMD Project**
+
+## **General Rules**
+- **Always respond in Korean.**
+- **Explain it like you're explaining it to a coding newbie.**
+- **No change without my confirmation.**
+- **Consider splitting individual code files if they are more than 500 lines long.**
+- **Don't just write enhancement code when you're trying to determine the cause of an error.**
+- **Before adding new features, review the associated code to ensure that it is connected to the current project.**
+- **Prohibit generating code to resolve errors.**
+
+---
+
+## **Key Principles**
+- Maintain a **modular and scalable architecture** as defined in the `CMD` project structure.
+- Use **functional programming** where possible; avoid unnecessary class-based implementations except for Flask views and models.
+- Prioritize **iteration and modularization** over code duplication.
+- Use **descriptive variable names** with auxiliary verbs (e.g., `is_active`, `has_permission`).
+- Follow **lowercase with underscores** for directories and files (e.g., `firewall_module/command_handler.py`).
+- Use **named exports** for routes and utility functions.
+- Follow the **Receive an Object, Return an Object (RORO)** pattern where applicable.
+
+---
+
+## **Python/Flask**
+- Use `def` for function definitions.
+- Use **type hints** for all function signatures where possible.
+- **File structure** should follow:
+  - `app/firewall_module/`: Firewall-specific logic and command execution.
+  - `app/models/`: Database models.
+  - `app/routes/`: URL routing using Flask Blueprints.
+  - `app/services/`: Business logic layer.
+  - `app/templates/`: Jinja2 templates for UI (if applicable).
+  - `app/utils/`: Common helper functions.
+  - `tests/`: Unit and integration tests.
+  - `migrations/`: Database migrations using Flask-Migrate.
+  - `instance/`: Configurations and sensitive data storage.
+  - `docs/`: Project documentation.
+- **Avoid unnecessary curly braces** in conditional statements.
+- **For single-line conditionals**, omit curly braces:
+  ```python
+  if condition: do_something()
+  ```
+
+---
+
+## **Error Handling and Validation**
+- **Handle errors at the beginning** of functions to avoid deeply nested logic.
+- **Use early returns** for error conditions.
+- **Place the happy path last** in functions for better readability.
+- **Avoid unnecessary `else` statements** by using `if-return` patterns.
+- **Use guard clauses** for validating inputs and handling preconditions.
+- **Implement structured logging** for errors and events using `app.logger`.
+- **Use custom error types** or exception handling middleware for consistency.
+
+Example:
+```python
+from flask import jsonify
+
+def validate_input(data: dict):
+    if not data.get("firewall_id"):
+        return jsonify({"error": "firewall_id is required"}), 400
+```
+
+---
+
+## **Dependencies**
+- **Flask** - Core framework.
+- **Flask-RESTful** - For RESTful API development.
+- **Flask-SQLAlchemy** - ORM for database interactions.
+- **Flask-Migrate** - Database migrations.
+- **Marshmallow** - Serialization and input validation.
+- **Flask-JWT-Extended** - Authentication and authorization.
+- **Celery** (optional) - Background task execution.
+
+---
+
+## **Flask-Specific Guidelines**
+- **Use Flask application factories** (`create_app`) for modularity and easier testing.
+- **Organize routes** using Flask Blueprints (`app/routes/`).
+- **Use Flask-RESTful** for RESTful APIs with class-based views.
+- **Implement custom error handlers** for different exception types.
+- **Leverage Flask request lifecycle hooks**:
+  - `before_request`
+  - `after_request`
+  - `teardown_request`
+- **Utilize Flask extensions** for common functionalities (e.g., `Flask-SQLAlchemy`, `Flask-Migrate`).
+- **Use Flask’s `config` object** for managing different environments.
+- **Log API requests and errors** using `app.logger`.
+- **Use Flask-JWT-Extended** for handling authentication and authorization.
+
+---
+
+## **Performance Optimization**
+- **Enable Flask-Caching** for frequently accessed data.
+- **Optimize database queries** using eager loading and indexing.
+- **Use connection pooling** for database efficiency.
+- **Ensure proper session management** in SQLAlchemy.
+- **Move time-consuming tasks** to background processing (e.g., using Celery).
+
+Example:
+```python
+from flask_caching import Cache
+
+cache = Cache(config={'CACHE_TYPE': 'simple'})
+
+@cache.cached(timeout=60)
+def get_firewall_rules():
+    return FirewallRule.query.all()
+```
+
+---
+
+## **Testing**
+- **Use `pytest` for unit tests.**
+- **Use Flask’s test client** for API integration tests.
+- **Create fixtures** for setting up test data.
+
+Example:
+```python
+import pytest
+from app import create_app
+
+@pytest.fixture
+def client():
+    app = create_app()
+    with app.test_client() as client:
+        yield client
+```
+
+---
+
+## **Deployment**
+- **Use Gunicorn or uWSGI** as the WSGI HTTP server.
+- **Enable proper logging and monitoring** in production.
+- **Use environment variables** to manage secrets (`.env` file).
+
+Example `.env` file:
+```
+DATABASE_URL=postgresql://user:password@localhost/cmd_db
+SECRET_KEY=mysecretkey
+```
+
+---
+
+## **Summary**
+| Feature            | Implementation |
+|-------------------|--------------|
+| **Project Structure** | Modular with `firewall_module`, `routes`, `models`, `services` |
+| **Database** | Flask-SQLAlchemy + Flask-Migrate |
+| **Authentication** | JWT-based using `Flask-JWT-Extended` |
+| **Validation** | Marshmallow for input validation |
+| **Error Handling** | Centralized error handlers and structured logging |
+| **Testing** | `pytest` with Flask’s test client |
+| **Performance** | Caching, optimized queries, and background tasks |
+| **Documentation** | Swagger/OpenAPI integration |
+| **Deployment** | Gunicorn, logging, and environment management |
+
+Refer to the Flask documentation for best practices on Views, Blueprints, and Extensions. 🚀
+
