@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let searchQuery = '';
     let currentFilters = [];
     let currentObjectType = 'network'; // 기본값: 네트워크 객체
+    let searchTimer = null; // 검색 타이머 변수 추가
 
     // 객체 유형 버튼 선택 처리
     const objectTypeButtons = document.querySelectorAll('[data-object-type]');
@@ -35,17 +36,30 @@ document.addEventListener('DOMContentLoaded', function() {
     objectTypeButtons[0].click();
 
     // 검색 기능
-    const searchBtn = document.getElementById('searchBtn');
     const searchInput = document.getElementById('searchInput');
     
-    searchBtn.addEventListener('click', function() {
-        searchQuery = searchInput.value.trim();
-        currentPage = 1; // 검색 시 첫 페이지로 이동
-        loadObjects();
+    // 키 입력 이벤트로 변경
+    searchInput.addEventListener('input', function() {
+        // 이전 타이머가 있으면 취소
+        if (searchTimer) {
+            clearTimeout(searchTimer);
+        }
+        
+        // 300ms 딜레이 후 검색 실행 (타이핑 중에 너무 많은 요청을 방지)
+        searchTimer = setTimeout(function() {
+            searchQuery = searchInput.value.trim();
+            currentPage = 1;
+            loadObjects();
+        }, 300);
     });
     
+    // Enter 키 이벤트도 유지 (즉시 검색 실행)
     searchInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
+            // 타이머 취소
+            if (searchTimer) {
+                clearTimeout(searchTimer);
+            }
             searchQuery = searchInput.value.trim();
             currentPage = 1;
             loadObjects();

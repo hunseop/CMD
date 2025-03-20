@@ -13,6 +13,7 @@ alwaysApply: true
 - **Don't just write enhancement code when you're trying to determine the cause of an error.**
 - **Before adding new features, review the associated code to ensure that it is connected to the current project.**
 - **Prohibit generating code to resolve errors.**
+- When implementing new functions to implement what I want, how to implement it or how to implement new functions so that my guide can implement it as desired, suggests how to implement it
 
 ---
 
