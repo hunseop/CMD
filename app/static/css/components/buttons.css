@@ -47,4 +47,19 @@
     padding: 4px 8px;
     font-size: 12px;
     height: 28px;
+}
+
+/* 객체 유형 버튼 스타일 */
+.object-type-buttons {
+    margin-bottom: 1.5rem;
+}
+
+.object-type-buttons .btn-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.object-type-buttons .btn {
+    flex: 1;
+    white-space: nowrap;
 } 

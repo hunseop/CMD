@@ -28,6 +28,151 @@ export function initObjects() {
     const objectTypeButtons = document.querySelectorAll('[data-object-type]');
     const objectsTableBody = document.getElementById('objects-table-body');
     const paginationContainer = document.querySelector('.pagination-container');
+    const addFilterBtn = document.getElementById('addFilterBtn');
+    const filterForm = document.getElementById('filterForm');
+    const clearFilterBtn = document.getElementById('clearFilterBtn');
+    const cancelFilterBtn = document.getElementById('cancelFilterBtn');
+    const activeFilters = document.getElementById('activeFilters');
+    
+    // 저장된 필터 복원
+    restoreFilters();
+    
+    // 필터 폼 표시/숨김 처리
+    if (addFilterBtn && filterForm) {
+        addFilterBtn.addEventListener('click', () => {
+            filterForm.style.display = 'block';
+        });
+    }
+    
+    // 필터 취소 버튼 처리
+    if (cancelFilterBtn && filterForm) {
+        cancelFilterBtn.addEventListener('click', () => {
+            filterForm.style.display = 'none';
+            filterForm.reset();
+        });
+    }
+    
+    // 필터 초기화 버튼 처리
+    if (clearFilterBtn && activeFilters) {
+        clearFilterBtn.addEventListener('click', () => {
+            activeFilters.innerHTML = '';
+            sessionStorage.removeItem('objectsFilters');
+            loadObjects();
+        });
+    }
+    
+    // 필터 상태 저장
+    function saveFilters() {
+        const activeFilterElements = activeFilters.querySelectorAll('.filter-tag');
+        const filters = Array.from(activeFilterElements).map(tag => {
+            const text = tag.querySelector('.filter-text').textContent;
+            const [field, operator, value] = text.split(' ');
+            return { field, operator, value: value.replace(/"/g, '') };
+        });
+        sessionStorage.setItem('objectsFilters', JSON.stringify(filters));
+    }
+    
+    // 필터 상태 복원
+    function restoreFilters() {
+        const savedFilters = sessionStorage.getItem('objectsFilters');
+        if (savedFilters && activeFilters) {
+            const filters = JSON.parse(savedFilters);
+            filters.forEach(filter => {
+                const filterTag = document.createElement('div');
+                filterTag.className = 'filter-tag';
+                filterTag.innerHTML = `
+                    <span class="filter-text">${filter.field} ${filter.operator} "${filter.value}"</span>
+                    <span class="remove-filter" aria-label="필터 제거">×</span>
+                `;
+                
+                const removeBtn = filterTag.querySelector('.remove-filter');
+                removeBtn.addEventListener('click', () => {
+                    filterTag.remove();
+                    saveFilters();
+                    loadObjects();
+                });
+                
+                activeFilters.appendChild(filterTag);
+            });
+            
+            if (window.feather) {
+                feather.replace();
+            }
+        }
+    }
+    
+    // 필터 폼 제출 처리
+    if (filterForm) {
+        filterForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(filterForm);
+            const field = formData.get('field');
+            const operator = formData.get('operator');
+            const value = formData.get('value');
+            
+            if (field && operator && value) {
+                // 필터 태그 생성
+                const filterTag = document.createElement('div');
+                filterTag.className = 'filter-tag';
+                filterTag.innerHTML = `
+                    <span class="filter-text">${getFieldLabel(field)} ${getOperatorLabel(operator)} "${value}"</span>
+                    <span class="remove-filter" aria-label="필터 제거">×</span>
+                `;
+                
+                // 필터 제거 버튼 이벤트 처리
+                const removeBtn = filterTag.querySelector('.remove-filter');
+                removeBtn.addEventListener('click', () => {
+                    filterTag.remove();
+                    saveFilters();
+                    loadObjects();
+                });
+                
+                // 활성 필터 영역에 추가
+                activeFilters.appendChild(filterTag);
+                
+                // feather 아이콘 초기화
+                if (window.feather) {
+                    feather.replace();
+                }
+                
+                // 필터 상태 저장
+                saveFilters();
+                
+                // 폼 초기화 및 숨김
+                filterForm.reset();
+                filterForm.style.display = 'none';
+                
+                // 데이터 새로고침
+                loadObjects();
+            }
+        });
+    }
+    
+    // 필드 라벨 가져오기
+    function getFieldLabel(field) {
+        const fieldLabels = {
+            'device_name': '장비명',
+            'name': '객체명',
+            'type': '객체 유형',
+            'value': '값',
+            'firewall_type': '방화벽 유형'
+        };
+        return fieldLabels[field] || field;
+    }
+    
+    // 연산자 라벨 가져오기
+    function getOperatorLabel(operator) {
+        const operatorLabels = {
+            'contains': '포함',
+            'not_contains': '미포함',
+            'equals': '일치',
+            'not_equals': '불일치',
+            'starts_with': '시작',
+            'ends_with': '끝'
+        };
+        return operatorLabels[operator] || operator;
+    }
     
     // 페이지 크기 변경 이벤트 처리 함수
     function handlePerPageChange(e) {
@@ -79,12 +224,24 @@ export function initObjects() {
             // 로딩 표시
             showLoading();
             
+            // 활성화된 필터 수집
+            const activeFilterElements = activeFilters.querySelectorAll('.filter-tag');
+            const activeFiltersList = Array.from(activeFilterElements).map(tag => {
+                const text = tag.querySelector('.filter-text').textContent;
+                const [field, operator, value] = text.split(' ');
+                return {
+                    field: getFieldKey(field),
+                    operator: getOperatorKey(operator),
+                    value: value.replace(/"/g, '')
+                };
+            });
+            
             // API 파라미터 설정
             const params = {
                 type: currentObjectType,
                 page: currentPage,
                 pageSize: pageSize,
-                filters: filters.getActiveFilters()
+                filters: activeFiltersList
             };
             
             console.log('객체 목록 로드 파라미터:', params);
@@ -185,6 +342,31 @@ export function initObjects() {
             alert('객체 목록을 불러오는 중 오류가 발생했습니다.');
             hideLoading();
         }
+    }
+    
+    // 필드 키 가져오기
+    function getFieldKey(label) {
+        const fieldKeys = {
+            '장비명': 'device_name',
+            '객체명': 'name',
+            '객체 유형': 'type',
+            '값': 'value',
+            '방화벽 유형': 'firewall_type'
+        };
+        return fieldKeys[label] || label;
+    }
+    
+    // 연산자 키 가져오기
+    function getOperatorKey(label) {
+        const operatorKeys = {
+            '포함': 'contains',
+            '미포함': 'not_contains',
+            '일치': 'equals',
+            '불일치': 'not_equals',
+            '시작': 'starts_with',
+            '끝': 'ends_with'
+        };
+        return operatorKeys[label] || label;
     }
     
     /**
