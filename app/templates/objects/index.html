@@ -6,7 +6,7 @@
     <div class="page-header">
         <h2>방화벽 객체</h2>
         <div class="header-actions">
-            <button type="button" class="btn btn-outline" id="exportToExcel">
+            <button type="button" class="btn btn-outline" id="exportExcelBtn">
                 <i data-feather="download"></i> 엑셀 내보내기
             </button>
         </div>
@@ -30,10 +30,10 @@
         </div>
 
         <!-- 필터 조건 입력 폼 -->
-        <div class="filter-form" id="filterForm" style="display: none;">
+        <form class="filter-form" id="filterForm" style="display: none;">
             <div class="filter-form-content">
                 <div class="filter-row">
-                    <select class="filter-field">
+                    <select class="filter-field" name="field">
                         <option value="">필드 선택</option>
                         <option value="device_name">장비명</option>
                         <option value="name">객체명</option>
@@ -41,7 +41,7 @@
                         <option value="value">값</option>
                         <option value="firewall_type">방화벽 유형</option>
                     </select>
-                    <select class="filter-operator">
+                    <select class="filter-operator" name="operator">
                         <option value="contains">포함</option>
                         <option value="not_contains">미포함</option>
                         <option value="equals">일치</option>
@@ -49,16 +49,16 @@
                         <option value="starts_with">시작</option>
                         <option value="ends_with">끝</option>
                     </select>
-                    <input type="text" class="filter-value" placeholder="필터값 입력">
-                    <select class="filter-join" style="display: none;">
+                    <input type="text" class="filter-value" name="value" placeholder="필터값 입력">
+                    <select class="filter-join" name="join" style="display: none;">
                         <option value="and">그리고 (AND)</option>
                         <option value="or">또는 (OR)</option>
                     </select>
-                    <button type="button" class="btn btn-primary" id="applyFilterBtn">적용</button>
+                    <button type="submit" class="btn btn-primary">적용</button>
                     <button type="button" class="btn btn-outline" id="cancelFilterBtn">취소</button>
                 </div>
             </div>
-        </div>
+        </form>
     </div>
 
     <!-- 검색 영역 -->
@@ -106,7 +106,5 @@
 {% endblock %}
 
 {% block page_js %}
-<script src="{{ url_for('static', filename='js/modules/objects/filter.js') }}"></script>
-<script src="{{ url_for('static', filename='js/modules/objects/export.js') }}"></script>
-<script src="{{ url_for('static', filename='js/modules/objects/objects.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/pages/objects.js') }}"></script>
 {% endblock %} 

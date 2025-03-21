@@ -10,7 +10,7 @@ from app.utils.excel import generate_excel_file, get_excel_filename
 from datetime import datetime
 import io
 
-@objects_bp.route('/api/objects')
+@objects_bp.route('/api/list')
 def get_objects():
     """객체 목록 API"""
     # 요청 파라미터
@@ -187,7 +187,7 @@ def get_objects():
         'pagination': pagination_info
     })
 
-@objects_bp.route('/api/objects/export')
+@objects_bp.route('/api/export')
 def export_objects():
     """객체 Excel 내보내기 API"""
     # 요청 파라미터
