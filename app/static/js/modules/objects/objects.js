@@ -89,23 +89,18 @@ document.addEventListener('DOMContentLoaded', function() {
      * 객체 데이터 로드 함수
      */
     function loadObjects() {
-        // 로딩 표시
         showLoading();
         
-        // API 요청 URL 구성
         let url = `/objects/api/objects?type=${currentObjectType}&page=${currentPage}&per_page=${perPage}`;
         
-        // 검색어 추가
         if (searchQuery) {
             url += `&search=${encodeURIComponent(searchQuery)}`;
         }
         
-        // 필터 추가
         if (currentFilters.length > 0) {
             url += `&filters=${encodeURIComponent(JSON.stringify(currentFilters))}`;
         }
         
-        // API 요청
         fetch(url)
             .then(response => {
                 if (!response.ok) {
@@ -114,8 +109,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(data => {
+                console.log('Server response:', data); // 디버깅용
                 updateTable(data.objects, data.object_type);
-                updatePagination(data.pagination);
+                if (data.pagination) {
+                    console.log('Pagination data:', data.pagination); // 디버깅용
+                    updatePagination(data.pagination);
+                }
                 hideLoading();
             })
             .catch(error => {
@@ -181,76 +180,70 @@ document.addEventListener('DOMContentLoaded', function() {
      * 페이지네이션 업데이트 함수
      */
     function updatePagination(pagination) {
-        const paginationContainer = document.querySelector('.pagination');
+        if (!pagination || !pagination.pages || pagination.pages <= 1) {
+            const paginationContainer = document.querySelector('.pagination-container');
+            if (paginationContainer) {
+                paginationContainer.style.display = 'none';
+            }
+            return;
+        }
+
+        const paginationContainer = document.querySelector('.pagination-container');
         if (!paginationContainer) return;
-        
-        // 페이지네이션 HTML 생성 로직
-        let html = '';
-        
+        paginationContainer.style.display = 'block';
+
+        let html = `
+        <div class="pagination-wrapper">
+            <div class="per-page-select">
+                <select id="perPageSelect" class="per-page">
+                    <option value="10" ${pagination.per_page == 10 ? 'selected' : ''}>10개씩 보기</option>
+                    <option value="20" ${pagination.per_page == 20 ? 'selected' : ''}>20개씩 보기</option>
+                    <option value="50" ${pagination.per_page == 50 ? 'selected' : ''}>50개씩 보기</option>
+                    <option value="100" ${pagination.per_page == 100 ? 'selected' : ''}>100개씩 보기</option>
+                </select>
+            </div>
+            <div class="pagination">`;
+
         // 이전 페이지 버튼
         if (pagination.has_prev) {
-            html += `
-                <li class="page-item">
-                    <a class="page-link" href="javascript:void(0)" data-page="${pagination.prev_num}" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
-                </li>
-            `;
-        } else {
-            html += `
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
-                </li>
-            `;
+            html += `<a href="#" class="page-link" data-page="${pagination.prev_num}" aria-label="이전 페이지">&laquo;</a>`;
         }
-        
+
         // 페이지 번호
-        pagination.pages.forEach(page => {
-            if (page === '...') {
-                html += `
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#">...</a>
-                    </li>
-                `;
-            } else {
-                if (page === pagination.page) {
-                    html += `
-                        <li class="page-item active">
-                            <a class="page-link" href="javascript:void(0)">${page}</a>
-                        </li>
-                    `;
+        if (pagination.pages && Array.isArray(pagination.pages)) {
+            pagination.pages.forEach(page => {
+                if (page) {
+                    if (page !== currentPage) {
+                        html += `<a href="#" class="page-link" data-page="${page}">${page}</a>`;
+                    } else {
+                        html += `<span class="page-link active">${page}</span>`;
+                    }
                 } else {
-                    html += `
-                        <li class="page-item">
-                            <a class="page-link" href="javascript:void(0)" data-page="${page}">${page}</a>
-                        </li>
-                    `;
+                    html += `<span class="ellipsis">...</span>`;
                 }
-            }
-        });
-        
+            });
+        }
+
         // 다음 페이지 버튼
         if (pagination.has_next) {
-            html += `
-                <li class="page-item">
-                    <a class="page-link" href="javascript:void(0)" data-page="${pagination.next_num}" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>
-            `;
-        } else {
-            html += `
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>
-            `;
+            html += `<a href="#" class="page-link" data-page="${pagination.next_num}" aria-label="다음 페이지">&raquo;</a>`;
         }
-        
+
+        html += `
+            </div>
+        </div>`;
+
         paginationContainer.innerHTML = html;
+
+        // 페이지당 항목 수 변경 이벤트 다시 바인딩
+        const perPageSelect = document.getElementById('perPageSelect');
+        if (perPageSelect) {
+            perPageSelect.addEventListener('change', function() {
+                perPage = parseInt(this.value);
+                currentPage = 1;
+                loadObjects();
+            });
+        }
     }
 
     /**
