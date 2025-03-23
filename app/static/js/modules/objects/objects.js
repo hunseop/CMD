@@ -2,409 +2,210 @@
  * 객체 관리 메인 모듈
  */
 
-// 모듈 가져오기
+import { initAPI } from './api.js';
 import { initFilters } from './filter.js';
 import { initPagination } from './pagination.js';
-import { initAPI } from './api.js';
 import { initExport } from './export.js';
-import { showLoading, hideLoading } from './utils.js';
+import { showLoading, hideLoading, showError, getObjectTypeLabel, getFirewallTypeLabel, formatDate, debounce } from './utils.js';
 
-/**
- * 객체 관리 모듈 초기화
- */
 export function initObjects() {
-    // 상태 변수
-    let currentObjectType = 'network'; // 기본값: 네트워크 객체
-    let currentPage = parseInt(sessionStorage.getItem('objectsCurrentPage')) || 1;
-    let pageSize = parseInt(sessionStorage.getItem('objectsPageSize')) || 10;
-    
-    // 모듈 초기화
+    // API 초기화
     const api = initAPI();
-    const filters = initFilters(loadObjects);
-    const pagination = initPagination(loadObjects, currentPage, pageSize);
-    const exporter = initExport(getAllObjects);
+    
+    // URL 파라미터에서 초기 상태 가져오기
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialObjectType = urlParams.get('type') || 'network';
+    const initialPage = parseInt(urlParams.get('page')) || 1;
+    const initialPerPage = parseInt(urlParams.get('per_page')) || 10;
+    
+    // 상태 관리
+    let currentObjectType = initialObjectType;
+    let isLoading = false;
     
     // DOM 요소
-    const objectTypeButtons = document.querySelectorAll('[data-object-type]');
+    const objectsTable = document.getElementById('objectsTable');
     const objectsTableBody = document.getElementById('objects-table-body');
-    const paginationContainer = document.querySelector('.pagination-container');
-    const addFilterBtn = document.getElementById('addFilterBtn');
-    const filterForm = document.getElementById('filterForm');
-    const clearFilterBtn = document.getElementById('clearFilterBtn');
-    const cancelFilterBtn = document.getElementById('cancelFilterBtn');
-    const activeFilters = document.getElementById('activeFilters');
+    const objectTypeButtons = document.querySelectorAll('.object-type-btn');
+    const searchInput = document.getElementById('searchInput');
     
-    // 저장된 필터 복원
-    restoreFilters();
+    // 필터 초기화
+    const filters = initFilters(() => loadObjects());
     
-    // 필터 폼 표시/숨김 처리
-    if (addFilterBtn && filterForm) {
-        addFilterBtn.addEventListener('click', () => {
-            filterForm.style.display = 'block';
-        });
-    }
+    // 페이지네이션 초기화 (초기값 전달)
+    const pagination = initPagination(() => loadObjects(), initialPage, initialPerPage);
     
-    // 필터 취소 버튼 처리
-    if (cancelFilterBtn && filterForm) {
-        cancelFilterBtn.addEventListener('click', () => {
-            filterForm.style.display = 'none';
-            filterForm.reset();
-        });
-    }
+    // 내보내기 초기화
+    const exporter = initExport(() => getAllObjects());
     
-    // 필터 초기화 버튼 처리
-    if (clearFilterBtn && activeFilters) {
-        clearFilterBtn.addEventListener('click', () => {
-            activeFilters.innerHTML = '';
-            sessionStorage.removeItem('objectsFilters');
-            loadObjects();
-        });
-    }
-    
-    // 필터 상태 저장
-    function saveFilters() {
-        const activeFilterElements = activeFilters.querySelectorAll('.filter-tag');
-        const filters = Array.from(activeFilterElements).map(tag => {
-            const text = tag.querySelector('.filter-text').textContent;
-            const [field, operator, value] = text.split(' ');
-            return { field, operator, value: value.replace(/"/g, '') };
-        });
-        sessionStorage.setItem('objectsFilters', JSON.stringify(filters));
-    }
-    
-    // 필터 상태 복원
-    function restoreFilters() {
-        const savedFilters = sessionStorage.getItem('objectsFilters');
-        if (savedFilters && activeFilters) {
-            const filters = JSON.parse(savedFilters);
-            filters.forEach(filter => {
-                const filterTag = document.createElement('div');
-                filterTag.className = 'filter-tag';
-                filterTag.innerHTML = `
-                    <span class="filter-text">${filter.field} ${filter.operator} "${filter.value}"</span>
-                    <span class="remove-filter" aria-label="필터 제거">×</span>
-                `;
-                
-                const removeBtn = filterTag.querySelector('.remove-filter');
-                removeBtn.addEventListener('click', () => {
-                    filterTag.remove();
-                    saveFilters();
-                    loadObjects();
-                });
-                
-                activeFilters.appendChild(filterTag);
-            });
-            
-            if (window.feather) {
-                feather.replace();
-            }
-        }
-    }
-    
-    // 필터 폼 제출 처리
-    if (filterForm) {
-        filterForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const formData = new FormData(filterForm);
-            const field = formData.get('field');
-            const operator = formData.get('operator');
-            const value = formData.get('value');
-            
-            if (field && operator && value) {
-                // 필터 태그 생성
-                const filterTag = document.createElement('div');
-                filterTag.className = 'filter-tag';
-                filterTag.innerHTML = `
-                    <span class="filter-text">${getFieldLabel(field)} ${getOperatorLabel(operator)} "${value}"</span>
-                    <span class="remove-filter" aria-label="필터 제거">×</span>
-                `;
-                
-                // 필터 제거 버튼 이벤트 처리
-                const removeBtn = filterTag.querySelector('.remove-filter');
-                removeBtn.addEventListener('click', () => {
-                    filterTag.remove();
-                    saveFilters();
-                    loadObjects();
-                });
-                
-                // 활성 필터 영역에 추가
-                activeFilters.appendChild(filterTag);
-                
-                // feather 아이콘 초기화
-                if (window.feather) {
-                    feather.replace();
+    // 이벤트 리스너 등록
+    if (objectTypeButtons) {
+        objectTypeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const type = button.dataset.objectType;
+                if (type && type !== currentObjectType) {
+                    currentObjectType = type;
+                    updateObjectTypeUI();
+                    loadObjects();  // URL 파라미터는 loadObjects 내에서 업데이트됨
                 }
-                
-                // 필터 상태 저장
-                saveFilters();
-                
-                // 폼 초기화 및 숨김
-                filterForm.reset();
-                filterForm.style.display = 'none';
-                
-                // 데이터 새로고침
-                loadObjects();
-            }
-        });
-    }
-    
-    // 필드 라벨 가져오기
-    function getFieldLabel(field) {
-        const fieldLabels = {
-            'device_name': '장비명',
-            'name': '객체명',
-            'type': '객체 유형',
-            'value': '값',
-            'firewall_type': '방화벽 유형'
-        };
-        return fieldLabels[field] || field;
-    }
-    
-    // 연산자 라벨 가져오기
-    function getOperatorLabel(operator) {
-        const operatorLabels = {
-            'contains': '포함',
-            'not_contains': '미포함',
-            'equals': '일치',
-            'not_equals': '불일치',
-            'starts_with': '시작',
-            'ends_with': '끝'
-        };
-        return operatorLabels[operator] || operator;
-    }
-    
-    // 페이지 크기 변경 이벤트 처리 함수
-    function handlePerPageChange(e) {
-        pageSize = parseInt(e.target.value);
-        currentPage = 1; // 페이지 크기가 변경되면 첫 페이지로 이동
-        sessionStorage.setItem('objectsPageSize', pageSize);
-        sessionStorage.setItem('objectsCurrentPage', currentPage);
-        loadObjects();
-    }
-    
-    // 페이지 변경 이벤트 처리 함수
-    function handlePageChange(newPage) {
-        currentPage = newPage;
-        sessionStorage.setItem('objectsCurrentPage', currentPage);
-        loadObjects();
-    }
-    
-    // 객체 유형 버튼 선택 처리
-    objectTypeButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // 이전 선택 버튼 비활성화
-            objectTypeButtons.forEach(btn => {
-                btn.classList.remove('active');
-                btn.classList.remove('btn-primary');
-                btn.classList.add('btn-outline-primary');
             });
-            
-            // 현재 버튼 활성화
-            this.classList.add('active');
-            this.classList.remove('btn-outline-primary');
-            this.classList.add('btn-primary');
-            
-            // 객체 유형 업데이트 및 데이터 로드
-            currentObjectType = this.getAttribute('data-object-type');
-            currentPage = 1; // 객체 유형이 변경되면 첫 페이지로 이동
-            sessionStorage.setItem('objectsCurrentPage', currentPage);
-            loadObjects();
         });
+    }
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(() => {
+            loadObjects();
+        }, 300));
+    }
+    
+    // 페이지 로드 시 popstate 이벤트 리스너 등록
+    window.addEventListener('popstate', (event) => {
+        const params = new URLSearchParams(window.location.search);
+        currentObjectType = params.get('type') || 'network';
+        updateObjectTypeUI();
+        loadObjects(false);  // URL 파라미터 업데이트 건너뛰기
     });
-
-    // 초기 버튼 선택 (네트워크 객체)
-    objectTypeButtons[0].click();
+    
+    /**
+     * URL 파라미터 업데이트
+     */
+    function updateURLParams() {
+        const params = new URLSearchParams();
+        params.set('type', currentObjectType);
+        params.set('page', pagination.getCurrentPage().toString());
+        params.set('per_page', pagination.getPageSize().toString());
+        
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.pushState({ type: currentObjectType }, '', newUrl);
+    }
     
     /**
      * 객체 목록 로드
+     * @param {boolean} updateURL - URL 파라미터 업데이트 여부 (기본값: true)
      */
-    async function loadObjects() {
+    async function loadObjects(updateURL = true) {
+        if (isLoading) return;
+        
         try {
-            // 로딩 표시
             showLoading();
+            isLoading = true;
             
-            // 활성화된 필터 수집
-            const activeFilterElements = activeFilters.querySelectorAll('.filter-tag');
-            const activeFiltersList = Array.from(activeFilterElements).map(tag => {
-                const text = tag.querySelector('.filter-text').textContent;
-                const [field, operator, value] = text.split(' ');
-                return {
-                    field: getFieldKey(field),
-                    operator: getOperatorKey(operator),
-                    value: value.replace(/"/g, '')
-                };
-            });
-            
-            // API 파라미터 설정
             const params = {
                 type: currentObjectType,
-                page: currentPage,
-                pageSize: pageSize,
-                filters: activeFiltersList
-            };
-            
-            console.log('객체 목록 로드 파라미터:', params);
-            
-            // 객체 데이터 가져오기
-            const data = await api.getObjects(params);
-            
-            // 테이블 데이터 업데이트
-            if (objectsTableBody) {
-                objectsTableBody.innerHTML = data.objects.map((obj, index) => `
-                    <tr>
-                        <td>${(params.page - 1) * params.pageSize + index + 1}</td>
-                        <td>${obj.device_name}</td>
-                        <td>${obj.name || obj.group_name}</td>
-                        <td>${obj.type || (obj.group_name ? '그룹' : '')}</td>
-                        <td>${obj.value || obj.entry || ''}</td>
-                        <td>${obj.firewall_type}</td>
-                        <td>${obj.last_sync_at || ''}</td>
-                    </tr>
-                `).join('');
-            }
-            
-            // 페이지네이션 HTML 업데이트
-            if (paginationContainer) {
-                const totalPages = Math.ceil(data.pagination.total / params.pageSize);
-                
-                // 페이지네이션 HTML 생성
-                let paginationHtml = `
-                    <div class="pagination-wrapper">
-                        <div class="per-page-select">
-                            <select id="perPage" class="per-page">
-                                <option value="10" ${pageSize === 10 ? 'selected' : ''}>10개씩 보기</option>
-                                <option value="20" ${pageSize === 20 ? 'selected' : ''}>20개씩 보기</option>
-                                <option value="50" ${pageSize === 50 ? 'selected' : ''}>50개씩 보기</option>
-                                <option value="100" ${pageSize === 100 ? 'selected' : ''}>100개씩 보기</option>
-                            </select>
-                        </div>`;
-                
-                if (totalPages > 1) {
-                    paginationHtml += `
-                        <div class="pagination" id="pagination">
-                            ${currentPage > 1 ? `
-                                <a href="#" class="page-link" data-page="${currentPage - 1}" aria-label="이전 페이지">&laquo;</a>
-                            ` : ''}
-                            
-                            ${Array.from({length: totalPages}, (_, i) => i + 1)
-                                .filter(page => {
-                                    const delta = 2;
-                                    return page === 1 || 
-                                           page === totalPages || 
-                                           (page >= currentPage - delta && page <= currentPage + delta);
-                                })
-                                .map(page => {
-                                    if (page === currentPage) {
-                                        return `<span class="current-page" data-page="${page}">${page}</span>`;
-                                    }
-                                    return `<a href="#" class="page-link" data-page="${page}">${page}</a>`;
-                                })
-                                .join('')}
-                            
-                            ${currentPage < totalPages ? `
-                                <a href="#" class="page-link" data-page="${currentPage + 1}" aria-label="다음 페이지">&raquo;</a>
-                            ` : ''}
-                        </div>`;
-                }
-                
-                paginationHtml += '</div>';
-                
-                // 페이지네이션 HTML 적용
-                paginationContainer.innerHTML = paginationHtml;
-                
-                // 페이지 크기 변경 이벤트 리스너 등록
-                const perPageSelect = document.getElementById('perPage');
-                if (perPageSelect) {
-                    // 이전 이벤트 리스너 제거
-                    perPageSelect.removeEventListener('change', handlePerPageChange);
-                    // 새 이벤트 리스너 등록
-                    perPageSelect.addEventListener('change', handlePerPageChange);
-                }
-                
-                // 페이지 버튼 클릭 이벤트 리스너 등록
-                const pageButtons = document.querySelectorAll('.page-link');
-                pageButtons.forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const newPage = parseInt(button.getAttribute('data-page'));
-                        if (!isNaN(newPage)) {
-                            handlePageChange(newPage);
-                        }
-                    });
-                });
-            }
-            
-            // 로딩 숨기기
-            hideLoading();
-        } catch (error) {
-            console.error('객체 목록 로드 중 오류 발생:', error);
-            alert('객체 목록을 불러오는 중 오류가 발생했습니다.');
-            hideLoading();
-        }
-    }
-    
-    // 필드 키 가져오기
-    function getFieldKey(label) {
-        const fieldKeys = {
-            '장비명': 'device_name',
-            '객체명': 'name',
-            '객체 유형': 'type',
-            '값': 'value',
-            '방화벽 유형': 'firewall_type'
-        };
-        return fieldKeys[label] || label;
-    }
-    
-    // 연산자 키 가져오기
-    function getOperatorKey(label) {
-        const operatorKeys = {
-            '포함': 'contains',
-            '미포함': 'not_contains',
-            '일치': 'equals',
-            '불일치': 'not_equals',
-            '시작': 'starts_with',
-            '끝': 'ends_with'
-        };
-        return operatorKeys[label] || label;
-    }
-    
-    /**
-     * 모든 객체 데이터 가져오기 (엑셀 내보내기용)
-     * @returns {Promise<Object>} - 모든 객체 데이터
-     */
-    async function getAllObjects() {
-        try {
-            // 로딩 표시
-            showLoading();
-            
-            // API 파라미터 설정 (페이지 크기를 최대로 설정)
-            const params = {
-                type: currentObjectType,
-                page: 1,
-                pageSize: 1000, // 최대 페이지 크기
+                page: pagination.getCurrentPage(),
+                pageSize: pagination.getPageSize(),
                 filters: filters.getActiveFilters()
             };
             
-            console.log('엑셀 내보내기용 데이터 로드 파라미터:', params);
+            const response = await api.getObjects(params);
             
-            // 객체 데이터 가져오기
-            const data = await api.getObjects(params);
+            // 테이블 업데이트
+            updateObjectsTable(response.objects);
             
-            // 로딩 숨기기
-            hideLoading();
+            // 페이지네이션 업데이트
+            pagination.updatePaginationUI(response.pagination);
             
-            return data;
+            // URL 파라미터 업데이트 (필요한 경우에만)
+            if (updateURL) {
+                updateURLParams();
+            }
+            
         } catch (error) {
-            console.error('모든 객체 데이터 가져오기 중 오류 발생:', error);
+            showError('객체 목록을 불러오는 중 오류가 발생했습니다.');
+            console.error(error);
+        } finally {
             hideLoading();
-            throw error;
+            isLoading = false;
         }
     }
     
-    // 공개 메서드 반환
-    return {
-        loadObjects,
-        getAllObjects
-    };
+    /**
+     * 객체 테이블 업데이트
+     * @param {Array} objects - 객체 목록
+     */
+    function updateObjectsTable(objects) {
+        if (!objectsTableBody) return;
+        
+        if (!objects.length) {
+            objectsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center">데이터가 없습니다.</td>
+                </tr>
+            `;
+            return;
+        }
+        
+        const html = objects.map((obj, index) => {
+            // 객체 유형에 따라 다른 필드 표시
+            let name, type, value;
+            
+            if (currentObjectType === 'network') {
+                name = obj.name;
+                type = obj.type;
+                value = obj.value;
+            } else if (currentObjectType === 'network-group') {
+                name = obj.group_name;
+                type = '네트워크 그룹';
+                value = obj.entry;
+            } else if (currentObjectType === 'service') {
+                name = obj.name;
+                type = '서비스';
+                value = `${obj.protocol}/${obj.port}`;
+            } else if (currentObjectType === 'service-group') {
+                name = obj.group_name;
+                type = '서비스 그룹';
+                value = obj.entry;
+            }
+            
+            return `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${obj.device_name || '-'}</td>
+                    <td>${name || '-'}</td>
+                    <td>${type || '-'}</td>
+                    <td>${value || '-'}</td>
+                    <td>${getFirewallTypeLabel(obj.firewall_type)}</td>
+                    <td>${formatDate(obj.last_sync_at)}</td>
+                </tr>
+            `;
+        }).join('');
+        
+        objectsTableBody.innerHTML = html;
+    }
+    
+    /**
+     * 객체 유형 UI 업데이트
+     */
+    function updateObjectTypeUI() {
+        objectTypeButtons?.forEach(button => {
+            if (button.dataset.objectType === currentObjectType) {
+                button.classList.add('primary');
+            } else {
+                button.classList.remove('primary');
+            }
+        });
+    }
+    
+    /**
+     * 모든 객체 데이터 가져오기 (내보내기용)
+     */
+    async function getAllObjects() {
+        try {
+            const activeFilters = filters.getActiveFilters();
+            
+            return {
+                object_type: currentObjectType,
+                filters: activeFilters
+            };
+        } catch (error) {
+            showError('객체 데이터를 가져오는 중 오류가 발생했습니다.');
+            console.error(error);
+            return null;
+        }
+    }
+    
+    // 초기 UI 업데이트
+    updateObjectTypeUI();
+    
+    // 초기 로드
+    loadObjects();
 } 

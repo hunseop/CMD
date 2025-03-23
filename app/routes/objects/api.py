@@ -232,7 +232,7 @@ def export_objects():
                 model.device.has(name=search)
             ))
     
-    # 필터 적용 (get_objects와 동일한 로직)
+    # 필터 적용
     for filter_item in filters:
         field = filter_item.get('field')
         operator = filter_item.get('operator')
@@ -317,66 +317,61 @@ def export_objects():
             elif operator == 'not_equals':
                 query = query.filter(model.firewall_type != value)
     
-    # 모든 객체 가져오기
+    # 객체 목록 조회
     objects = query.all()
     
-    # 데이터 준비
+    # 데이터가 없는 경우
+    if not objects:
+        return jsonify({'message': 'no_data'}), 404
+    
+    # 엑셀 데이터 생성
     data = []
     for obj in objects:
         if object_type == 'network':
-            row = [
+            data.append([
                 obj.device.name,
                 obj.name,
                 obj.type,
                 obj.value,
                 obj.firewall_type,
-                obj.last_sync_at.strftime('%Y-%m-%d %H:%M:%S') if obj.last_sync_at else ''
-            ]
+                obj.last_sync_at.strftime('%Y-%m-%d %H:%M:%S') if obj.last_sync_at else '-'
+            ])
         elif object_type == 'network-group':
-            row = [
+            data.append([
                 obj.device.name,
                 obj.group_name,
                 obj.entry,
                 obj.firewall_type,
-                obj.last_sync_at.strftime('%Y-%m-%d %H:%M:%S') if obj.last_sync_at else ''
-            ]
+                obj.last_sync_at.strftime('%Y-%m-%d %H:%M:%S') if obj.last_sync_at else '-'
+            ])
         elif object_type == 'service':
-            row = [
+            data.append([
                 obj.device.name,
                 obj.name,
                 obj.protocol,
                 obj.port,
                 obj.firewall_type,
-                obj.last_sync_at.strftime('%Y-%m-%d %H:%M:%S') if obj.last_sync_at else ''
-            ]
+                obj.last_sync_at.strftime('%Y-%m-%d %H:%M:%S') if obj.last_sync_at else '-'
+            ])
         elif object_type == 'service-group':
-            row = [
+            data.append([
                 obj.device.name,
                 obj.group_name,
                 obj.entry,
                 obj.firewall_type,
-                obj.last_sync_at.strftime('%Y-%m-%d %H:%M:%S') if obj.last_sync_at else ''
-            ]
-        data.append(row)
+                obj.last_sync_at.strftime('%Y-%m-%d %H:%M:%S') if obj.last_sync_at else '-'
+            ])
     
-    # 객체 유형에 따른 파일명
-    object_type_names = {
-        'network': '네트워크_객체',
-        'network-group': '네트워크_그룹',
-        'service': '서비스_객체',
-        'service-group': '서비스_그룹'
-    }
+    # 엑셀 파일 생성
+    excel_file = generate_excel_file(headers, data)
     
-    # 유틸리티 함수를 사용하여 파일명 생성
-    filename = get_excel_filename(object_type_names.get(object_type, '방화벽_객체'))
+    # 파일명 생성
+    filename = get_excel_filename('firewall_objects')
     
-    # 유틸리티 함수를 사용하여 Excel 파일 생성
-    excel_file = generate_excel_file(headers, data, f"방화벽 {object_type_names.get(object_type, '객체')}")
-    
-    # 파일 전송
+    # 엑셀 파일 응답
     return send_file(
         excel_file,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name=filename,
-        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        download_name=filename
     ) 

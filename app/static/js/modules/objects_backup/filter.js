@@ -19,12 +19,14 @@ export function initFilters(onFilterChange) {
     const clearFilterBtn = document.getElementById('clearFilterBtn');
     const filterForm = document.getElementById('filterForm');
     const activeFiltersContainer = document.getElementById('activeFilters');
+    const applyFilterBtn = document.getElementById('applyFilterBtn');
+    const cancelFilterBtn = document.getElementById('cancelFilterBtn');
     
     // 필터 폼 필드
-    const filterField = filterForm?.querySelector('.filter-field');
-    const filterOperator = filterForm?.querySelector('.filter-operator');
-    const filterValue = filterForm?.querySelector('.filter-value');
-    const filterJoin = filterForm?.querySelector('.filter-join');
+    const filterField = document.querySelector('.filter-field');
+    const filterOperator = document.querySelector('.filter-operator');
+    const filterValue = document.querySelector('.filter-value');
+    const filterJoin = document.querySelector('.filter-join');
     
     // 필터 필드 변경 시 연산자 옵션 업데이트
     if (filterField) {
@@ -41,16 +43,11 @@ export function initFilters(onFilterChange) {
     if (clearFilterBtn) {
         clearFilterBtn.addEventListener('click', () => clearAllFilters(onFilterChange));
     }
-    if (filterForm) {
-        filterForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            applyFilter(onFilterChange);
-        });
-        
-        const cancelBtn = filterForm.querySelector('#cancelFilterBtn');
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', hideFilterForm);
-        }
+    if (applyFilterBtn) {
+        applyFilterBtn.addEventListener('click', () => applyFilter(onFilterChange));
+    }
+    if (cancelFilterBtn) {
+        cancelFilterBtn.addEventListener('click', hideFilterForm);
     }
     
     // 초기 UI 업데이트
@@ -72,6 +69,8 @@ export function initFilters(onFilterChange) {
                 filterField.value = filterField.options[1].value;
                 filterField.dispatchEvent(new Event('change'));
             }
+        } else {
+            alert('필터 폼을 찾을 수 없습니다. 페이지를 새로고침해 주세요.');
         }
     }
     
@@ -97,9 +96,7 @@ export function initFilters(onFilterChange) {
         }
         
         // 필터 값 초기화
-        if (filterValue) {
-            filterValue.value = '';
-        }
+        updateValueField();
         
         // 조인 초기화
         if (filterJoin) {
@@ -136,8 +133,12 @@ export function initFilters(onFilterChange) {
         
         // 필드별 특수 연산자
         switch (field) {
-            case 'type':
             case 'firewall_type':
+                return [
+                    { value: 'equals', text: '일치' },
+                    { value: 'not_equals', text: '불일치' }
+                ];
+            case 'type':
                 return [
                     { value: 'equals', text: '일치' },
                     { value: 'not_equals', text: '불일치' }
@@ -149,16 +150,23 @@ export function initFilters(onFilterChange) {
     
     // 필터 값 입력 필드 업데이트
     function updateValueField() {
-        if (!filterField || !filterValue) return;
+        if (!filterField) return;
         
         const field = filterField.value;
-        const currentValue = filterValue.value;
+        const oldValueElement = document.querySelector('.filter-value');
+        if (!oldValueElement) return;
         
-        // 새 필터 값 요소 생성
         let newValueElement;
         
         // 필드 유형에 따라 적절한 입력 요소 생성
         switch (field) {
+            case 'firewall_type':
+                newValueElement = createSelectElement([
+                    { value: 'ngf', text: 'NGF' },
+                    { value: 'mf2', text: 'MF2' },
+                    { value: 'mock', text: 'Mock' }
+                ]);
+                break;
             case 'type':
                 newValueElement = createSelectElement([
                     { value: 'ip', text: 'IP' },
@@ -170,31 +178,23 @@ export function initFilters(onFilterChange) {
                     { value: 'address_group', text: '주소 그룹' }
                 ]);
                 break;
-            case 'firewall_type':
-                newValueElement = createSelectElement([
-                    { value: 'ngf', text: 'NGF' },
-                    { value: 'mf2', text: 'MF2' },
-                    { value: 'mock', text: 'Mock' }
-                ]);
-                break;
             default:
                 newValueElement = document.createElement('input');
                 newValueElement.type = 'text';
                 newValueElement.className = 'filter-value';
-                newValueElement.name = 'value';
                 newValueElement.placeholder = '필터값 입력';
-                newValueElement.value = currentValue;
         }
         
         // 기존 요소를 새 요소로 교체
-        filterValue.parentElement.replaceChild(newValueElement, filterValue);
+        if (oldValueElement.parentElement) {
+            oldValueElement.parentElement.replaceChild(newValueElement, oldValueElement);
+        }
     }
     
     // 선택 요소 생성 헬퍼 함수
     function createSelectElement(options) {
         const select = document.createElement('select');
         select.className = 'filter-value';
-        select.name = 'value';
         
         options.forEach(opt => {
             const option = document.createElement('option');
@@ -216,15 +216,20 @@ export function initFilters(onFilterChange) {
             return;
         }
         
-        const operator = filterOperator?.value || 'contains';
-        const value = filterForm.querySelector('.filter-value')?.value?.trim();
+        const operator = filterOperator ? filterOperator.value : 'contains';
+        const valueElement = document.querySelector('.filter-value');
+        if (!valueElement) {
+            alert('필터 값을 찾을 수 없습니다.');
+            return;
+        }
         
+        const value = valueElement.value.trim();
         if (!value) {
             alert('필터 값을 입력해주세요.');
             return;
         }
         
-        const join = activeFilters.length > 0 && filterJoin?.value;
+        const join = activeFilters.length > 0 && filterJoin ? filterJoin.value : null;
         
         // 필터 객체 생성
         const filter = { field, operator, value };
@@ -282,7 +287,7 @@ export function initFilters(onFilterChange) {
                 <span class="filter-text">
                     ${getFieldLabel(filter.field)} 
                     ${getOperatorLabel(filter.operator)} 
-                    "${getValueLabel(filter.field, filter.value)}"
+                    "${filter.value}"
                     ${filter.join ? ` ${filter.join === 'and' ? '그리고' : '또는'}` : ''}
                 </span>
                 <button type="button" class="remove-filter" data-index="${index}">&times;</button>
@@ -326,32 +331,6 @@ export function initFilters(onFilterChange) {
             'ends_with': '끝'
         };
         return operatorMap[operator] || operator;
-    }
-    
-    // 값 라벨 가져오기
-    function getValueLabel(field, value) {
-        switch (field) {
-            case 'type':
-                const typeMap = {
-                    'ip': 'IP',
-                    'network': '네트워크',
-                    'fqdn': 'FQDN',
-                    'url': 'URL',
-                    'service': '서비스',
-                    'service_group': '서비스 그룹',
-                    'address_group': '주소 그룹'
-                };
-                return typeMap[value] || value;
-            case 'firewall_type':
-                const firewallMap = {
-                    'ngf': 'NGF',
-                    'mf2': 'MF2',
-                    'mock': 'Mock'
-                };
-                return firewallMap[value] || value;
-            default:
-                return value;
-        }
     }
     
     // 활성 필터 가져오기

@@ -3,45 +3,75 @@
  */
 
 /**
- * API 모듈 초기화
+ * API 초기화
  */
 export function initAPI() {
-    /**
-     * 객체 목록 가져오기
-     * @param {Object} params - API 파라미터
-     * @returns {Promise<Object>} - 객체 데이터
-     */
-    async function getObjects(params) {
-        try {
-            // API 엔드포인트 URL 생성
-            const queryParams = new URLSearchParams({
-                type: params.type,
-                page: params.page,
-                per_page: params.pageSize,
-                ...params.filters
-            });
-            
-            const url = `/objects/api/list?${queryParams}`;
-            console.log('API 요청 URL:', url);
-            
-            // API 요청
-            const response = await fetch(url);
-            
-            // 응답 확인
-            if (!response.ok) {
-                throw new Error(`API 요청 실패: ${response.status}`);
-            }
-            
-            // JSON 데이터 반환
-            return await response.json();
-        } catch (error) {
-            console.error('API 요청 중 오류 발생:', error);
-            throw error;
-        }
-    }
-    
-    // 공개 메서드 반환
     return {
-        getObjects
+        getObjects,
+        exportObjects
     };
+}
+
+/**
+ * 객체 목록 조회
+ * @param {Object} params - 요청 파라미터
+ * @param {string} params.type - 객체 유형 (network, network-group, service, service-group)
+ * @param {number} params.page - 페이지 번호
+ * @param {number} params.pageSize - 페이지 크기
+ * @param {Array} params.filters - 필터 조건
+ * @returns {Promise<Object>} 객체 목록 및 페이지네이션 정보
+ */
+async function getObjects(params = {}) {
+    try {
+        const searchParams = new URLSearchParams({
+            type: params.type || 'network',
+            page: params.page || 1,
+            per_page: params.pageSize || 10
+        });
+
+        if (params.filters?.length > 0) {
+            searchParams.append('filters', JSON.stringify(params.filters));
+        }
+
+        const response = await fetch(`/objects/api/list?${searchParams.toString()}`);
+        
+        if (!response.ok) {
+            throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('객체 목록 조회 중 오류 발생:', error);
+        throw error;
+    }
+}
+
+/**
+ * 객체 데이터 내보내기
+ * @param {Object} params - 요청 파라미터
+ * @param {string} params.type - 객체 유형 (network, network-group, service, service-group)
+ * @param {Array} params.filters - 필터 조건
+ * @returns {Promise<Blob>} Excel 파일 데이터
+ */
+async function exportObjects(params = {}) {
+    try {
+        const searchParams = new URLSearchParams({
+            type: params.type || 'network'
+        });
+
+        if (params.filters?.length > 0) {
+            searchParams.append('filters', JSON.stringify(params.filters));
+        }
+
+        const response = await fetch(`/objects/api/export?${searchParams.toString()}`);
+        
+        if (!response.ok) {
+            throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
+        }
+        
+        return await response.blob();
+    } catch (error) {
+        console.error('객체 데이터 내보내기 중 오류 발생:', error);
+        throw error;
+    }
 } 

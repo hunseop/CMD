@@ -13,6 +13,9 @@ def create_app():
     # 설정 로드
     app.config.from_object('config.Config')
     
+    # 정적 파일 캐시 비활성화
+    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+    
     # 데이터베이스 초기화
     db.init_app(app)
     migrate.init_app(app, db)

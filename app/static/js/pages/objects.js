@@ -6,8 +6,7 @@
 // 모듈 가져오기
 import { initObjects } from '../modules/objects/objects.js';
 
-// DOM이 완전히 준비된 후 객체 모듈 초기화
-window.addEventListener('load', () => {
+document.addEventListener('DOMContentLoaded', () => {
     // 객체 모듈 초기화
     initObjects();
 }); 
