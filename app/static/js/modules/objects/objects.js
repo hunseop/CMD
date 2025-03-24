@@ -21,6 +21,7 @@ export function initObjects() {
     // 상태 관리
     let currentObjectType = initialObjectType;
     let isLoading = false;
+    let searchQuery = urlParams.get('search') || localStorage.getItem('objectsSearchQuery') || '';  // 로컬스토리지에서 검색어 복원
     
     // DOM 요소
     const objectsTable = document.getElementById('objectsTable');
@@ -37,6 +38,11 @@ export function initObjects() {
     // 내보내기 초기화
     const exporter = initExport(() => getAllObjects());
     
+    // 검색 입력 필드 초기화
+    if (searchInput) {
+        searchInput.value = searchQuery;
+    }
+    
     // 이벤트 리스너 등록
     if (objectTypeButtons) {
         objectTypeButtons.forEach(button => {
@@ -44,8 +50,14 @@ export function initObjects() {
                 const type = button.dataset.objectType;
                 if (type && type !== currentObjectType) {
                     currentObjectType = type;
+                    // 객체 유형이 변경되면 검색어 초기화
+                    searchQuery = '';
+                    if (searchInput) {
+                        searchInput.value = '';
+                    }
+                    localStorage.removeItem('objectsSearchQuery');
                     updateObjectTypeUI();
-                    loadObjects();  // URL 파라미터는 loadObjects 내에서 업데이트됨
+                    loadObjects();
                 }
             });
         });
@@ -53,6 +65,13 @@ export function initObjects() {
     
     if (searchInput) {
         searchInput.addEventListener('input', debounce(() => {
+            searchQuery = searchInput.value;
+            // 검색어를 로컬스토리지에 저장
+            if (searchQuery) {
+                localStorage.setItem('objectsSearchQuery', searchQuery);
+            } else {
+                localStorage.removeItem('objectsSearchQuery');
+            }
             loadObjects();
         }, 300));
     }
@@ -61,8 +80,12 @@ export function initObjects() {
     window.addEventListener('popstate', (event) => {
         const params = new URLSearchParams(window.location.search);
         currentObjectType = params.get('type') || 'network';
+        searchQuery = params.get('search') || localStorage.getItem('objectsSearchQuery') || '';  // 로컬스토리지에서 검색어 복원
+        if (searchInput) {
+            searchInput.value = searchQuery;
+        }
         updateObjectTypeUI();
-        loadObjects(false);  // URL 파라미터 업데이트 건너뛰기
+        loadObjects(false);
     });
     
     /**
@@ -73,9 +96,12 @@ export function initObjects() {
         params.set('type', currentObjectType);
         params.set('page', pagination.getCurrentPage().toString());
         params.set('per_page', pagination.getPageSize().toString());
+        if (searchQuery) {
+            params.set('search', searchQuery);
+        }
         
         const newUrl = `${window.location.pathname}?${params.toString()}`;
-        window.history.pushState({ type: currentObjectType }, '', newUrl);
+        window.history.pushState({ type: currentObjectType, search: searchQuery }, '', newUrl);
     }
     
     /**
@@ -93,7 +119,8 @@ export function initObjects() {
                 type: currentObjectType,
                 page: pagination.getCurrentPage(),
                 pageSize: pagination.getPageSize(),
-                filters: filters.getActiveFilters()
+                filters: filters.getActiveFilters(),
+                search: searchQuery  // 검색어 파라미터 추가
             };
             
             const response = await api.getObjects(params);

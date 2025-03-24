@@ -44,13 +44,15 @@ def get_objects():
     if search:
         if object_type in ['network', 'service']:
             query = query.filter(or_(
-                model.name.ilike(f'%{search}%'),
-                model.device.has(name=search)
+                model.name.ilike(f'%{search}%'),  # 객체명 검색
+                model.device.has(Device.name.ilike(f'%{search}%')),  # 장비명 검색
+                model.value.ilike(f'%{search}%') if object_type == 'network' else model.port.ilike(f'%{search}%')  # 값 검색
             ))
         else:  # network-group, service-group
             query = query.filter(or_(
-                model.group_name.ilike(f'%{search}%'),
-                model.device.has(name=search)
+                model.group_name.ilike(f'%{search}%'),  # 그룹명 검색
+                model.device.has(Device.name.ilike(f'%{search}%')),  # 장비명 검색
+                model.entry.ilike(f'%{search}%')  # 멤버 값 검색
             ))
     
     # 필터 적용
@@ -223,13 +225,15 @@ def export_objects():
     if search:
         if object_type in ['network', 'service']:
             query = query.filter(or_(
-                model.name.ilike(f'%{search}%'),
-                model.device.has(name=search)
+                model.name.ilike(f'%{search}%'),  # 객체명 검색
+                model.device.has(Device.name.ilike(f'%{search}%')),  # 장비명 검색
+                model.value.ilike(f'%{search}%') if object_type == 'network' else model.port.ilike(f'%{search}%')  # 값 검색
             ))
         else:  # network-group, service-group
             query = query.filter(or_(
-                model.group_name.ilike(f'%{search}%'),
-                model.device.has(name=search)
+                model.group_name.ilike(f'%{search}%'),  # 그룹명 검색
+                model.device.has(Device.name.ilike(f'%{search}%')),  # 장비명 검색
+                model.entry.ilike(f'%{search}%')  # 멤버 값 검색
             ))
     
     # 필터 적용

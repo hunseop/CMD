@@ -102,11 +102,16 @@ def index():
         # 검색 조건 (필터된 결과 내 검색)
         if search:
             search_conditions = [
-                FirewallPolicy.rule_name.ilike(f'%{search}%'),
-                FirewallPolicy.source.ilike(f'%{search}%'),
-                FirewallPolicy.destination.ilike(f'%{search}%'),
-                FirewallPolicy.service.ilike(f'%{search}%'),
-                Device.name.ilike(f'%{search}%')
+                Device.name.ilike(f'%{search}%'),  # 장비명
+                FirewallPolicy.rule_name.ilike(f'%{search}%'),  # 규칙명
+                FirewallPolicy.source.ilike(f'%{search}%'),  # 출발지
+                FirewallPolicy.destination.ilike(f'%{search}%'),  # 목적지
+                FirewallPolicy.service.ilike(f'%{search}%'),  # 서비스
+                FirewallPolicy.user.ilike(f'%{search}%'),  # 사용자
+                FirewallPolicy.application.ilike(f'%{search}%'),  # 애플리케이션
+                FirewallPolicy.vsys.ilike(f'%{search}%'),  # 가상시스템
+                FirewallPolicy.security_profile.ilike(f'%{search}%'),  # 보안프로필
+                FirewallPolicy.category.ilike(f'%{search}%')  # 카테고리
             ]
             query = query.filter(db.or_(*search_conditions))
         
@@ -236,11 +241,16 @@ def export_excel():
         # 검색 조건 (필터된 결과 내 검색)
         if search:
             search_conditions = [
-                FirewallPolicy.rule_name.ilike(f'%{search}%'),
-                FirewallPolicy.source.ilike(f'%{search}%'),
-                FirewallPolicy.destination.ilike(f'%{search}%'),
-                FirewallPolicy.service.ilike(f'%{search}%'),
-                Device.name.ilike(f'%{search}%')
+                Device.name.ilike(f'%{search}%'),  # 장비명
+                FirewallPolicy.rule_name.ilike(f'%{search}%'),  # 규칙명
+                FirewallPolicy.source.ilike(f'%{search}%'),  # 출발지
+                FirewallPolicy.destination.ilike(f'%{search}%'),  # 목적지
+                FirewallPolicy.service.ilike(f'%{search}%'),  # 서비스
+                FirewallPolicy.user.ilike(f'%{search}%'),  # 사용자
+                FirewallPolicy.application.ilike(f'%{search}%'),  # 애플리케이션
+                FirewallPolicy.vsys.ilike(f'%{search}%'),  # 가상시스템
+                FirewallPolicy.security_profile.ilike(f'%{search}%'),  # 보안프로필
+                FirewallPolicy.category.ilike(f'%{search}%')  # 카테고리
             ]
             query = query.filter(db.or_(*search_conditions))
         

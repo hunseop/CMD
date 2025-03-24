@@ -30,22 +30,18 @@ export function initAPI() {
             // 파라미터 병합
             const queryParams = { ...defaultParams, ...params };
             
-            // 검색 파라미터 가져오기 (파라미터로 전달되지 않은 경우에만 DOM에서 가져옴)
-            const deviceId = queryParams.deviceId || document.getElementById('deviceFilter')?.value || '';
-            const status = queryParams.status || document.getElementById('statusFilter')?.value || '';
-            const search = queryParams.search || document.getElementById('policySearch')?.value || '';
-            
             // API 요청 데이터 구성
             const requestData = {
                 page: queryParams.page,
                 per_page: queryParams.pageSize,
-                device_id: deviceId,
-                status: status,
-                search: search,
-                filters: queryParams.filters
+                filters: queryParams.filters,
+                search: queryParams.search || ''
             };
             
-            console.log('API 요청 데이터:', requestData);
+            console.log('API 요청 시작:', {
+                요청URL: '/policies/',
+                요청데이터: requestData
+            });
             
             // AJAX 요청
             const response = await fetch('/policies/', {
@@ -59,23 +55,46 @@ export function initAPI() {
             
             // 응답 확인
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error('API 응답 오류:', {
+                    상태코드: response.status,
+                    상태텍스트: response.statusText,
+                    응답내용: errorText
+                });
                 throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
             }
             
             // JSON 응답 파싱
             const data = await response.json();
-            console.log('API 응답 데이터:', data);
+            console.log('API 응답 데이터:', {
+                HTML길이: data.html?.length || 0,
+                페이지네이션길이: data.pagination?.length || 0,
+                아이템수: data.items?.length || 0,
+                총개수: data.total || 0
+            });
             
             // 테이블 내용 업데이트
             const tableBody = document.getElementById('policies-table-body');
             if (tableBody && data.html) {
+                console.log('테이블 업데이트');
                 tableBody.innerHTML = data.html;
+            } else {
+                console.warn('테이블 업데이트 실패:', {
+                    테이블요소존재: !!tableBody,
+                    HTML데이터존재: !!data.html
+                });
             }
             
             // 페이지네이션 업데이트
             const paginationContainer = document.querySelector('.pagination-container');
             if (paginationContainer && data.pagination) {
+                console.log('페이지네이션 업데이트');
                 paginationContainer.innerHTML = data.pagination;
+            } else {
+                console.warn('페이지네이션 업데이트 실패:', {
+                    페이지네이션요소존재: !!paginationContainer,
+                    페이지네이션데이터존재: !!data.pagination
+                });
             }
             
             // 응답 데이터 형식 변환 (백엔드 응답 형식에 맞게 조정)
@@ -85,9 +104,7 @@ export function initAPI() {
                 items: data.items || [],
                 total: data.total || 0,
                 filters: queryParams.filters,
-                device_id: deviceId,
-                status: status,
-                search: search
+                search: queryParams.search || ''
             };
         } catch (error) {
             console.error('정책 목록 조회 중 오류 발생:', error);

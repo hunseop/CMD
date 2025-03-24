@@ -19,6 +19,7 @@ export function initAPI() {
  * @param {number} params.page - 페이지 번호
  * @param {number} params.pageSize - 페이지 크기
  * @param {Array} params.filters - 필터 조건
+ * @param {string} params.search - 검색어
  * @returns {Promise<Object>} 객체 목록 및 페이지네이션 정보
  */
 async function getObjects(params = {}) {
@@ -28,6 +29,10 @@ async function getObjects(params = {}) {
             page: params.page || 1,
             per_page: params.pageSize || 10
         });
+
+        if (params.search) {
+            searchParams.append('search', params.search);
+        }
 
         if (params.filters?.length > 0) {
             searchParams.append('filters', JSON.stringify(params.filters));
