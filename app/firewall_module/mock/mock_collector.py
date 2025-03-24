@@ -4,6 +4,7 @@ import pandas as pd
 from typing import Optional
 from datetime import datetime, timedelta
 import random
+import time
 
 class MockCollector(FirewallInterface):
     """테스트용 가상 방화벽 Collector"""
@@ -13,26 +14,32 @@ class MockCollector(FirewallInterface):
     
     def export_security_rules(self):
         """보안 규칙 내보내기"""
+        time.sleep(random.uniform(1, 3))  # 1~3초 랜덤 지연
         return self.client.export_security_rules()
     
     def export_network_objects(self):
         """네트워크 객체 내보내기"""
+        time.sleep(random.uniform(1, 3))  # 1~3초 랜덤 지연
         return self.client.export_network_objects()
     
     def export_network_group_objects(self):
         """네트워크 그룹 내보내기"""
+        time.sleep(random.uniform(1, 3))  # 1~3초 랜덤 지연
         return self.client.export_network_group_objects()
     
     def export_service_objects(self):
         """서비스 객체 내보내기"""
+        time.sleep(random.uniform(1, 3))  # 1~3초 랜덤 지연
         return self.client.export_service_objects()
     
     def export_service_group_objects(self):
         """서비스 그룹 내보내기"""
+        time.sleep(random.uniform(1, 3))  # 1~3초 랜덤 지연
         return self.client.export_service_group_objects()
 
     def get_system_info(self):
         """시스템 정보 조회 (Mock)"""
+        time.sleep(random.uniform(1, 3))  # 1~3초 랜덤 지연
         return pd.DataFrame({
             'hostname': [self.client.hostname],
             'version': ['1.0.0'],
@@ -51,6 +58,8 @@ class MockCollector(FirewallInterface):
         Returns:
             pd.DataFrame: Rule Name, Last Hit Date, Unused Days, 미사용여부 컬럼을 가진 DataFrame
         """
+        time.sleep(random.uniform(1, 3))  # 1~3초 랜덤 지연
+        
         # 보안 규칙 가져오기
         rules_df = self.export_security_rules()
         

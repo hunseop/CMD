@@ -83,3 +83,6 @@ coverage.xml
 
 # pytype static type analyzer
 .pytype/ 
+
+
+browser-tools-mcp-main/
