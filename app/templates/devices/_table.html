@@ -9,25 +9,71 @@
         <td>
             {% if device.category == 'firewall' and device.id in sync_info %}
                 {% set info = sync_info[device.id] %}
-                {% if info.system_info %}
-                    <span class="sync-status success">동기화됨</span>
+                {% if info.active_task %}
+                    {% set task = info.active_task %}
+                    {% if task.status == 'running' %}
+                        <div class="sync-status in-progress">
+                            <div class="progress-bar">
+                                <div class="progress" data-progress="{{ task.progress }}"></div>
+                            </div>
+                            <div class="progress-info">
+                                <span class="progress-percentage">{{ task.progress }}%</span>
+                                <span class="progress-time">{{ task.elapsed_time_formatted }}</span>
+                            </div>
+                            <div class="sync-details">
+                                {% if task.current_sync_type %}
+                                    {{ task.current_sync_type }} 동기화 중
+                                {% else %}
+                                    동기화 중
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% elif task.status == 'pending' %}
+                        <div class="sync-status pending">대기 중</div>
+                        <div class="sync-details">대기열 위치: {{ task.queue_position }}</div>
+                    {% endif %}
+                {% elif info.last_task %}
+                    {% set task = info.last_task %}
+                    {% if task.status == 'completed' %}
+                        <div class="sync-status success">동기화됨</div>
+                        <div class="sync-details">
+                            {{ task.completed_at.strftime('%Y-%m-%d %H:%M') }}
+                        </div>
+                    {% elif task.status == 'failed' %}
+                        <div class="sync-status warning">실패</div>
+                        <div class="sync-details">
+                            {{ task.completed_at.strftime('%Y-%m-%d %H:%M') }}
+                        </div>
+                    {% elif task.status == 'canceled' %}
+                        <div class="sync-status warning">취소됨</div>
+                        <div class="sync-details">
+                            {{ task.completed_at.strftime('%Y-%m-%d %H:%M') }}
+                        </div>
+                    {% endif %}
+                {% elif info.system_info %}
+                    <div class="sync-status success">동기화됨</div>
                     {% if info.last_sync %}
                         <div class="sync-details">
                             {{ info.last_sync.created_at.strftime('%Y-%m-%d %H:%M') }}
                         </div>
                     {% endif %}
                 {% else %}
-                    <span class="sync-status warning">미동기화</span>
+                    <div class="sync-status warning">미동기화</div>
                 {% endif %}
             {% else %}
-                <span class="sync-status">-</span>
+                <div class="sync-status">-</div>
             {% endif %}
         </td>
         <td class="actions">
             <a href="{{ url_for('devices.detail', id=device.id) }}" class="btn small">상세</a>
             <a href="{{ url_for('devices.edit', id=device.id) }}" class="btn small">수정</a>
             {% if device.category == 'firewall' %}
-                <button class="btn small primary sync-btn" data-id="{{ device.id }}" data-name="{{ device.name }}">동기화</button>
+                {% if device.id in sync_info and sync_info[device.id].active_task %}
+                    {% set task = sync_info[device.id].active_task %}
+                    <button class="btn small warning cancel-sync-btn" data-id="{{ task.id }}" data-name="{{ device.name }}">동기화 취소</button>
+                {% else %}
+                    <button class="btn small primary sync-btn" data-id="{{ device.id }}" data-name="{{ device.name }}">동기화</button>
+                {% endif %}
             {% endif %}
             <button class="btn small danger delete-btn" data-id="{{ device.id }}" data-name="{{ device.name }}">삭제</button>
         </td>
@@ -37,4 +83,4 @@
     <tr>
         <td colspan="7" class="empty-message">등록된 장비가 없습니다.</td>
     </tr>
-{% endif %} 
+{% endif %}

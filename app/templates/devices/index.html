@@ -5,6 +5,7 @@
 {% block page_title %}장비 관리{% endblock %}
 
 {% block page_js %}
+<script src="{{ url_for('static', filename='js/modules/sync.js') }}"></script>
 <script src="{{ url_for('static', filename='js/pages/devices.js') }}"></script>
 {% endblock %}
 
@@ -112,55 +113,97 @@
         <button type="button" class="modal-close">&times;</button>
     </div>
     <div class="modal-body">
-        <p><strong id="syncDeviceName"></strong> 장비의 정보를 동기화합니다.</p>
-        <form id="syncForm" method="POST">
-            <div class="form-group">
-                <div class="checkbox-group">
-                    <div class="group-header">
-                        <input type="checkbox" id="selectAll" checked>
-                        <h4 class="group-title">동기화 항목 선택</h4>
-                    </div>
-                    <div class="group-content">
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="sync_system_info" name="sync_type" value="system_info" checked>
-                            <label for="sync_system_info">시스템 정보</label>
+        <div id="syncOptionsView">
+            <p><strong id="syncDeviceName"></strong> 장비의 정보를 동기화합니다.</p>
+            <form id="syncForm">
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <div class="group-header">
+                            <input type="checkbox" id="selectAll" checked>
+                            <h4 class="group-title">동기화 항목 선택</h4>
                         </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="sync_policies" name="sync_type" value="policies" checked>
-                            <label for="sync_policies">정책</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="sync_network_objects" name="sync_type" value="network_objects" checked>
-                            <label for="sync_network_objects">네트워크 객체</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="sync_network_groups" name="sync_type" value="network_groups" checked>
-                            <label for="sync_network_groups">네트워크 그룹</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="sync_service_objects" name="sync_type" value="service_objects" checked>
-                            <label for="sync_service_objects">서비스 객체</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="sync_service_groups" name="sync_type" value="service_groups" checked>
-                            <label for="sync_service_groups">서비스 그룹</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="sync_usage_logs" name="sync_type" value="usage_logs" checked>
-                            <label for="sync_usage_logs">사용 이력</label>
+                        <div class="group-content">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="sync_system_info" name="sync_type" value="system_info" checked>
+                                <label for="sync_system_info">시스템 정보</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="sync_policies" name="sync_type" value="policies" checked>
+                                <label for="sync_policies">정책</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="sync_network_objects" name="sync_type" value="network_objects" checked>
+                                <label for="sync_network_objects">네트워크 객체</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="sync_network_groups" name="sync_type" value="network_groups" checked>
+                                <label for="sync_network_groups">네트워크 그룹</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="sync_service_objects" name="sync_type" value="service_objects" checked>
+                                <label for="sync_service_objects">서비스 객체</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="sync_service_groups" name="sync_type" value="service_groups" checked>
+                                <label for="sync_service_groups">서비스 그룹</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="sync_usage_logs" name="sync_type" value="usage_logs" checked>
+                                <label for="sync_usage_logs">사용 이력</label>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </form>
+            <div class="form-note">
+                <p>* 동기화는 백그라운드에서 진행되며, 장비 목록에서 진행 상황을 확인할 수 있습니다.</p>
+                <p>* 대용량 데이터를 처리하는 경우 시간이 오래 걸릴 수 있습니다.</p>
             </div>
-        </form>
-        <div id="syncResult" class="mt-3" style="display: none;">
+        </div>
+        
+        <!-- 진행 상황 표시 (초기에는 숨김) -->
+        <div id="syncProgressView" style="display: none;">
+            <h4>동기화 진행 중</h4>
+            <div class="sync-progress-container">
+                <div class="progress-bar">
+                    <div id="syncProgressBar" class="progress" data-progress="0"></div>
+                </div>
+                <div class="progress-info">
+                    <span id="syncProgressPercentage">0%</span>
+                    <span id="syncProgressTime">00:00</span>
+                </div>
+                <div id="syncCurrentOperation" class="mt-2">준비 중...</div>
+            </div>
+            
+            <div class="form-note mt-3">
+                <p>* 동기화가 진행 중입니다. 브라우저를 닫아도 동기화는 계속 진행됩니다.</p>
+                <p>* 동기화를 취소하면 현재 단계까지만 적용됩니다.</p>
+            </div>
+        </div>
+        
+        <!-- 결과 표시 (초기에는 숨김) -->
+        <div id="syncResultView" class="mt-3" style="display: none;">
             <h4>동기화 결과</h4>
             <p id="syncResultMessage"></p>
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn" id="cancelSync">취소</button>
-        <button type="button" class="btn primary" id="submitSync">동기화</button>
+        <!-- 옵션 화면용 버튼 -->
+        <div id="syncOptionsButtons">
+            <button type="button" class="btn" id="cancelSync">취소</button>
+            <button type="button" class="btn primary" id="submitSync">동기화 시작</button>
+        </div>
+        
+        <!-- 진행 중 화면용 버튼 -->
+        <div id="syncProgressButtons" style="display: none;">
+            <button type="button" class="btn danger" id="stopSync">동기화 중단</button>
+            <button type="button" class="btn" id="hideModal">백그라운드로 계속</button>
+        </div>
+        
+        <!-- 결과 화면용 버튼 -->
+        <div id="syncResultButtons" style="display: none;">
+            <button type="button" class="btn primary" id="closeResult">확인</button>
+        </div>
     </div>
 </div>
 {% endblock %} 

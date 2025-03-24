@@ -6,5 +6,8 @@ from app.models.firewall import (
     FirewallNetworkGroup,
     FirewallServiceObject,
     FirewallServiceGroup,
-    SyncHistory
+    SyncHistory,
+    SyncTask,
+    SYNC_STATUS,
+    SYNC_PRIORITY
 ) 

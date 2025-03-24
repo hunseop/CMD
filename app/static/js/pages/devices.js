@@ -57,6 +57,7 @@ function initDevicesPage() {
     
     initDeleteModal();
     initUploadModal();
+    initSyncModal();
     initPaginationAndSearch();
 }
 
@@ -196,95 +197,107 @@ function confirmDelete() {
  * 동기화 모달 초기화
  */
 function initSyncModal() {
-    if (window.ModalModule) {
-        const syncDeviceName = document.getElementById('syncDeviceName');
-        const syncForm = document.getElementById('syncForm');
-        const selectAllCheckbox = document.getElementById('selectAll');
-        const checkboxes = syncForm ? syncForm.querySelectorAll('input[name="sync_type"]') : [];
+    // 동기화 모듈이 직접 모달을 처리하므로 여기서는 추가 초기화할 필요 없음
+    // SyncModule이 없는 경우에만 기본 처리
+    if (!window.SyncModule) {
+        // 동기화 버튼 이벤트 리스너
+        const syncButtons = document.querySelectorAll('.sync-btn');
+        const syncModal = document.getElementById('syncModal');
+        const modalOverlay = document.getElementById('modal-overlay');
         
-        if (selectAllCheckbox && checkboxes.length > 0) {
-            // 전체 선택/해제 이벤트
-            selectAllCheckbox.addEventListener('change', function() {
-                checkboxes.forEach(checkbox => checkbox.checked = this.checked);
-            });
-
-            // 개별 체크박스 변경 시 전체 선택 상태 업데이트
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    selectAllCheckbox.checked = Array.from(checkboxes).every(cb => cb.checked);
+        if (syncButtons.length > 0 && syncModal) {
+            syncButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const deviceId = this.getAttribute('data-id');
+                    const deviceName = this.getAttribute('data-name');
+                    
+                    // 장비 이름 설정
+                    const deviceNameElement = document.getElementById('syncDeviceName');
+                    if (deviceNameElement) {
+                        deviceNameElement.textContent = deviceName;
+                    }
+                    
+                    // 전체 선택
+                    const checkboxes = syncModal.querySelectorAll('input[type="checkbox"]');
+                    checkboxes.forEach(checkbox => checkbox.checked = true);
+                    
+                    // 모달 표시
+                    syncModal.classList.add('active');
+                    modalOverlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
                 });
             });
-        }
-        
-        window.ModalModule.initModal('syncModal', {
-            openSelector: '.sync-btn',
-            cancelSelector: '#cancelSync',
-            onOpen: function(modal, button) {
-                if (button) {
-                    const deviceId = button.getAttribute('data-id');
-                    const deviceName = button.getAttribute('data-name');
+            
+            // 닫기 버튼
+            const closeButtons = syncModal.querySelectorAll('.modal-close, #cancelSync');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    syncModal.classList.remove('active');
+                    modalOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            });
+            
+            // 동기화 시작 버튼
+            const submitBtn = document.getElementById('submitSync');
+            if (submitBtn) {
+                submitBtn.addEventListener('click', function() {
+                    // 최소한의 폼 검증
+                    const checkedBoxes = syncModal.querySelectorAll('input[name="sync_type"]:checked');
+                    if (checkedBoxes.length === 0) {
+                        alert('동기화할 항목을 하나 이상 선택해주세요.');
+                        return;
+                    }
                     
-                    if (syncDeviceName) syncDeviceName.textContent = deviceName;
-                    if (syncForm) syncForm.action = `/devices/${deviceId}/sync`;
-                }
+                    // 여기서는 간단한 확인 메시지만 표시
+                    alert('동기화가 시작되었습니다. 장비 목록에서 진행 상황을 확인하세요.');
+                    
+                    // 모달 닫기
+                    syncModal.classList.remove('active');
+                    modalOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
             }
-        });
-        
-        const submitBtn = document.getElementById('submitSync');
-        if (submitBtn) {
-            submitBtn.addEventListener('click', submitSyncForm);
         }
     }
 }
 
 /**
- * 동기화 폼 제출
+ * 동기화 취소 버튼 초기화
  */
-function submitSyncForm() {
-    const form = document.getElementById('syncForm');
-    const resultDiv = document.getElementById('syncResult');
-    const resultMessage = document.getElementById('syncResultMessage');
-    const submitBtn = document.getElementById('submitSync');
+function initCancelSyncButtons() {
+    const cancelButtons = document.querySelectorAll('.cancel-sync-btn');
     
-    if (!form) return;
-    
-    const selectedTypes = Array.from(form.querySelectorAll('input[name="sync_type"]:checked'))
-        .map(input => input.value);
-    
-    if (selectedTypes.length === 0) {
-        alert('동기화할 항목을 선택해주세요.');
-        return;
-    }
-    
-    updateButtonState(submitBtn, true, '동기화 중...', '동기화');
-    
-    const formData = new FormData();
-    selectedTypes.forEach(type => formData.append('sync_type', type));
-    
-    fetch(form.action, {
-        method: 'POST',
-        headers: {'X-Requested-With': 'XMLHttpRequest'},
-        body: formData
+    cancelButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const taskId = this.getAttribute('data-id');
+            const deviceName = this.getAttribute('data-name');
+            
+            if (confirm(`${deviceName} 장비의 동기화 작업을 취소하시겠습니까?`)) {
+                cancelSyncTask(taskId);
+            }
+        });
+    });
+}
+
+/**
+ * 동기화 작업 취소
+ */
+function cancelSyncTask(taskId) {
+    fetch(`/devices/api/tasks/${taskId}/cancel`, {
+        method: 'POST'
     })
-    .then(response => {
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            throw new TypeError("서버가 JSON을 반환하지 않았습니다!");
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        showResultMessage(resultDiv, resultMessage, data.message, data.success);
         if (data.success) {
-            setTimeout(() => window.location.reload(), 3000);
+            refreshDevicesList();
+        } else {
+            alert(`작업 취소 실패: ${data.message}`);
         }
     })
     .catch(error => {
-        showResultMessage(resultDiv, resultMessage, '동기화 중 오류가 발생했습니다: ' + error.message, false);
-    })
-    .finally(() => {
-        updateButtonState(submitBtn, false, '동기화 중...', '동기화');
+        console.error('작업 취소 중 오류:', error);
+        alert('작업 취소 중 오류가 발생했습니다.');
     });
 }
 
@@ -345,11 +358,56 @@ function loadDevices(page, search = '') {
     .catch(error => console.error('장비 목록 로드 중 오류 발생:', error));
 }
 
+/**
+ * 장비 목록 새로고침
+ */
+function refreshDevicesList() {
+    const tableBody = document.getElementById('devices-table-body');
+    const paginationContainer = document.querySelector('.pagination-container');
+    
+    if (!tableBody) return;
+    
+    // 현재 페이지 및 검색어 가져오기
+    const urlParams = new URLSearchParams(window.location.search);
+    const page = urlParams.get('page') || 1;
+    const search = urlParams.get('search') || '';
+    
+    // AJAX 요청
+    fetch(`/devices/list?page=${page}&search=${search}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // 테이블 내용 업데이트
+        if (tableBody) {
+            tableBody.innerHTML = data.html;
+        }
+        
+        // 페이지네이션 업데이트
+        if (paginationContainer) {
+            paginationContainer.innerHTML = data.pagination;
+        }
+        
+        // 이벤트 리스너 다시 설정
+        initDeleteModal();
+        initCancelSyncButtons();
+        
+        // 프로그레스 바 초기화
+        if (window.initProgressBars) {
+            window.initProgressBars();
+        }
+    })
+    .catch(error => {
+        console.error('장비 목록 갱신 중 오류:', error);
+    });
+}
+
 // DOMContentLoaded 이벤트에서 초기화
 document.addEventListener('DOMContentLoaded', function() {
     if (document.querySelector('.devices-container')) {
         initDevicesPage();
-        initSyncModal();
     }
     
     if (document.querySelector('.device-detail-container')) {

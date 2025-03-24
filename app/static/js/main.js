@@ -98,12 +98,60 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.style.overflow = '';
         });
     }
+    
+    // 프로그레스 바 초기화
+    initProgressBars();
 });
 
-// 모든 모듈 로드
+// 프로그레스 바 초기화 함수
+function initProgressBars() {
+    const progressElements = document.querySelectorAll('.progress[data-progress]');
+    
+    progressElements.forEach(element => {
+        const progress = element.getAttribute('data-progress');
+        if (progress) {
+            // 타임아웃은 애니메이션을 위한 것
+            setTimeout(() => {
+                element.style.width = `${progress}%`;
+            }, 50);
+        }
+    });
+}
+
+// 전역 스코프로 노출
+window.initProgressBars = initProgressBars;
+
+// 모듈 초기화 - 수정된 부분
 document.addEventListener('DOMContentLoaded', function() {
-    // 알림 메시지 자동 숨김 초기화 (모든 페이지에 적용)
-    if (window.AlertsModule) {
-        window.AlertsModule.initAutoHideAlerts();
+    // SyncModule 초기화
+    if (window.SyncModule) {
+        window.SyncModule.init();
     }
-}); 
+    
+    // 장비 관리 페이지 특화 초기화
+    const devicesContainer = document.querySelector('.devices-container');
+    if (devicesContainer) {
+        initDevicesPage();
+    }
+    
+    // MutationObserver 설정으로 DOM 변경 감지
+    setupMutationObserver();
+});
+
+// MutationObserver 설정
+function setupMutationObserver() {
+    // 테이블 내용이 변경될 때 프로그레스 바 초기화
+    const tableBody = document.getElementById('devices-table-body');
+    if (tableBody) {
+        const observer = new MutationObserver(function(mutations) {
+            // DOM이 변경되면 프로그레스 바 초기화
+            initProgressBars();
+        });
+        
+        // 설정
+        observer.observe(tableBody, {
+            childList: true,
+            subtree: true
+        });
+    }
+} 

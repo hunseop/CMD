@@ -151,4 +151,78 @@ class SyncHistory(db.Model):
     batch_id = db.Column(db.String(36), nullable=True, comment='배치 동기화 ID (UUID)')
     
     def __repr__(self):
-        return f'<SyncHistory {self.sync_type} for device_id={self.device_id} at {self.created_at}>' 
+        return f'<SyncHistory {self.sync_type} for device_id={self.device_id} at {self.created_at}>'
+
+# 동기화 상태 및 우선순위 상수 정의
+SYNC_STATUS = {
+    'PENDING': 'pending',      # 대기 중
+    'RUNNING': 'running',      # 실행 중
+    'COMPLETED': 'completed',  # 완료됨
+    'FAILED': 'failed',        # 실패함
+    'CANCELED': 'canceled'     # 취소됨
+}
+
+SYNC_PRIORITY = {
+    'HIGH': 1,     # 높은 우선순위
+    'NORMAL': 2,   # 일반 우선순위
+    'LOW': 3       # 낮은 우선순위
+}
+
+class SyncTask(db.Model):
+    """동기화 작업 관리 모델"""
+    id = db.Column(db.Integer, primary_key=True)
+    device_id = db.Column(db.Integer, db.ForeignKey('device.id'), nullable=False)
+    device = db.relationship('Device', backref='sync_tasks')
+    
+    # 작업 정보
+    task_name = db.Column(db.String(100), nullable=False, comment='작업명(예: 방화벽 정책 동기화)')
+    sync_types = db.Column(db.Text, nullable=False, comment='동기화 유형 목록(쉼표로 구분)')
+    
+    # 작업 상태
+    status = db.Column(db.String(20), default=SYNC_STATUS['PENDING'], comment='상태(pending, running, completed, failed, canceled)')
+    progress = db.Column(db.Integer, default=0, comment='진행률(0-100)')
+    current_sync_type = db.Column(db.String(50), nullable=True, comment='현재 동기화 중인 유형')
+    message = db.Column(db.Text, nullable=True, comment='상태 메시지')
+    
+    # 우선순위 (낮은 숫자가 높은 우선순위)
+    priority = db.Column(db.Integer, default=SYNC_PRIORITY['NORMAL'], comment='우선순위(1: 높음, 2: 보통, 3: 낮음)')
+    
+    # 시간 관련 필드
+    queue_position = db.Column(db.Integer, default=0, comment='큐에서의 위치(0: 실행 중)')
+    created_at = db.Column(db.DateTime, default=datetime.now, comment='생성 시간')
+    started_at = db.Column(db.DateTime, nullable=True, comment='시작 시간')
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now, comment='마지막 업데이트 시간')
+    completed_at = db.Column(db.DateTime, nullable=True, comment='완료 시간')
+    
+    # 배치 관련 필드
+    batch_id = db.Column(db.String(36), nullable=True, comment='배치 작업 ID')
+    is_batch = db.Column(db.Boolean, default=False, comment='배치 작업 여부')
+    
+    def __repr__(self):
+        return f'<SyncTask {self.task_name} for device_id={self.device_id}, status={self.status}>'
+    
+    @property
+    def elapsed_time(self):
+        """작업 소요 시간 계산 (초 단위)"""
+        if not self.started_at:
+            return 0
+            
+        end_time = self.completed_at or datetime.now()
+        return (end_time - self.started_at).total_seconds()
+    
+    @property
+    def elapsed_time_formatted(self):
+        """소요 시간을 mm:ss 형식으로 반환"""
+        seconds = int(self.elapsed_time)
+        minutes, seconds = divmod(seconds, 60)
+        return f"{minutes:02d}:{seconds:02d}"
+    
+    @property
+    def is_active(self):
+        """작업이 활성 상태인지 여부"""
+        return self.status in [SYNC_STATUS['PENDING'], SYNC_STATUS['RUNNING']]
+    
+    @property
+    def can_cancel(self):
+        """작업 취소 가능 여부"""
+        return self.status in [SYNC_STATUS['PENDING'], SYNC_STATUS['RUNNING']] 

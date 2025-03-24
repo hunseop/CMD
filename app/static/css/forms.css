@@ -132,4 +132,31 @@
     .form-actions .btn {
         width: 100%;
     }
+}
+
+/* 폼 노트 */
+.form-note {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: var(--info-light);
+    border-radius: 4px;
+    color: var(--info-color);
+    font-size: 13px;
+}
+
+.form-note p {
+    margin: 0;
+    margin-bottom: 5px;
+}
+
+.form-note p:last-child {
+    margin-bottom: 0;
+}
+
+.mt-2 {
+    margin-top: 10px;
+}
+
+.mt-3 {
+    margin-top: 15px;
 } 

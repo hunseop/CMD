@@ -31,6 +31,16 @@ def create_app():
     app.register_blueprint(policies_bp)
     app.register_blueprint(objects_bp)
     
+    # 애플리케이션 컨텍스트 설정 (워커를 위해 필요)
+    db.app = app
+    
+    # 동기화 워커 시작 (개발 모드에서는 실행 안 함)
+    if not app.config.get('DEBUG', False):
+        with app.app_context():
+            from app.services.firewall.worker import get_worker
+            worker = get_worker(poll_interval=10)
+            worker.start()
+    
     return app
 
 # 모델 임포트는 circular import를 피하기 위해 create_app 함수 정의 후에 작성
@@ -42,5 +52,6 @@ from app.models import (
     FirewallNetworkGroup,
     FirewallServiceObject,
     FirewallServiceGroup,
-    SyncHistory
+    SyncHistory,
+    SyncTask
 )

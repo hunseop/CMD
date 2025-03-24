@@ -1,6 +1,6 @@
 from flask import render_template, request, jsonify
 from app import db
-from app.models import Device, FirewallSystemInfo, SyncHistory
+from app.models import Device, FirewallSystemInfo, SyncHistory, SyncTask
 from app.routes.devices import devices_bp
 
 @devices_bp.route('/')
@@ -80,15 +80,35 @@ def list_devices():
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     devices = pagination.items
     
-    # 각 장비별 마지막 동기화 정보 조회
+    # 각 장비별 정보 조회
     sync_info = {}
     for device in devices:
         if device.category == 'firewall':
+            # 시스템 정보 동기화 여부
             system_info = FirewallSystemInfo.query.filter_by(device_id=device.id).first()
+            
+            # 마지막 동기화 이력
             last_sync = SyncHistory.query.filter_by(device_id=device.id).order_by(SyncHistory.created_at.desc()).first()
+            
+            # 현재 실행/대기 중인 작업
+            active_task = SyncTask.query.filter(
+                SyncTask.device_id == device.id,
+                SyncTask.status.in_(['pending', 'running'])
+            ).order_by(SyncTask.created_at.desc()).first()
+            
+            # 최근 완료된 작업
+            last_task = None
+            if not active_task:
+                last_task = SyncTask.query.filter(
+                    SyncTask.device_id == device.id,
+                    SyncTask.status.in_(['completed', 'failed', 'canceled'])
+                ).order_by(SyncTask.completed_at.desc()).first()
+            
             sync_info[device.id] = {
                 'system_info': system_info,
-                'last_sync': last_sync
+                'last_sync': last_sync,
+                'active_task': active_task,
+                'last_task': last_task
             }
     
     # 테이블 내용과 페이지네이션 HTML 렌더링
@@ -111,12 +131,30 @@ def detail(id):
     # 방화벽 정보 조회
     system_info = None
     sync_histories = []
+    current_tasks = []
+    recent_tasks = []
     
     if device.category == 'firewall':
         system_info = device.system_info
-        sync_histories = SyncHistory.query.filter_by(device_id=device.id).order_by(SyncHistory.created_at.desc()).limit(10).all()
+        
+        # 동기화 이력 조회
+        sync_histories = SyncHistory.query.filter_by(device_id=device.id).order_by(SyncHistory.created_at.desc()).limit(5).all()
+        
+        # 현재 진행 중인 작업 조회
+        current_tasks = SyncTask.query.filter(
+            SyncTask.device_id == device.id,
+            SyncTask.status.in_(['pending', 'running'])
+        ).order_by(SyncTask.created_at.desc()).all()
+        
+        # 최근 완료된 작업 조회
+        recent_tasks = SyncTask.query.filter(
+            SyncTask.device_id == device.id,
+            SyncTask.status.in_(['completed', 'failed', 'canceled'])
+        ).order_by(SyncTask.created_at.desc()).limit(5).all()
     
     return render_template('devices/detail.html', 
                           device=device,
                           system_info=system_info,
-                          sync_histories=sync_histories) 
+                          sync_histories=sync_histories,
+                          current_tasks=current_tasks,
+                          recent_tasks=recent_tasks) 
