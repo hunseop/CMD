@@ -12,9 +12,13 @@ class PaloAltoCollector(FirewallInterface):
         """시스템 정보를 반환합니다."""
         return self.api.get_system_info()
 
-    def export_security_rules(self) -> pd.DataFrame:
-        """보안 규칙을 반환합니다."""
-        return self.api.export_security_rules()
+    def export_security_rules(self, config_type: str = "running") -> pd.DataFrame:
+        """
+        보안 규칙을 반환합니다.
+        Args:
+        config_type (str): 'running' 또는 'candidate' 중 하나. 기본은 'running'.
+        """
+        return self.api.export_security_rules(config_type=config_type)
 
     def export_network_objects(self) -> pd.DataFrame:
         """네트워크 객체 정보를 반환합니다."""

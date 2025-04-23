@@ -10,7 +10,7 @@ class FirewallInterface(ABC):
         pass
 
     @abstractmethod
-    def export_security_rules(self) -> pd.DataFrame:
+    def export_security_rules(self, **kwargs) -> pd.DataFrame:
         """보안 규칙 데이터를 DataFrame으로 반환합니다."""
         pass
 
