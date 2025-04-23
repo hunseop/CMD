@@ -10,9 +10,9 @@ class FirewallCollectorFactory:
     # 각 방화벽 타입별 필수 파라미터 정의
     REQUIRED_PARAMS: Dict[str, list] = {
         'paloalto': ['hostname', 'username', 'password'],
-        'mf2': ['device_ip', 'username', 'password'],
-        'ngf': ['hostname', 'ext_clnt_id', 'ext_clnt_secret'],
-        'mock': ['hostname', 'username', 'password']  # Mock 방화벽 추가
+        'mf2': ['hostname', 'username', 'password'],
+        'ngf': ['hostname', 'username', 'password'],
+        'mock': ['hostname', 'username', 'password']
     }
 
     @staticmethod
@@ -21,23 +21,11 @@ class FirewallCollectorFactory:
 
         Args:
             source_type (str): 방화벽 타입 ('paloalto', 'mf2', 'ngf', 'mock' 중 하나)
-            **kwargs: 각 방화벽 타입별 필요한 파라미터
-                - paloalto:
-                    - hostname: 장비 호스트명
-                    - username: 접속 계정
-                    - password: 접속 비밀번호
-                - mf2:
-                    - device_ip: 장비 IP
-                    - username: 접속 계정
-                    - password: 접속 비밀번호
-                - ngf:
-                    - hostname: 장비 호스트명
-                    - ext_clnt_id: 외부 클라이언트 ID
-                    - ext_clnt_secret: 외부 클라이언트 시크릿
-                - mock:
-                    - hostname: 가상 호스트명
-                    - username: 가상 계정
-                    - password: 가상 비밀번호
+            **kwargs: 방화벽 인증에 필요한 파라미터
+            동일한 파라미터값으로 수정함
+                - hostname: 장비 호스트명
+                - username: 접속 계정
+                - password: 접속 비밀번호
 
         Returns:
             FirewallInterface: 방화벽 타입에 맞는 Collector 객체
@@ -61,9 +49,9 @@ class FirewallCollectorFactory:
         if source_type == 'paloalto':
             return PaloAltoCollector(kwargs['hostname'], kwargs['username'], kwargs['password'])
         elif source_type == 'mf2':
-            return MF2Collector(kwargs['device_ip'], kwargs['username'], kwargs['password'])
+            return MF2Collector(kwargs['hostname'], kwargs['username'], kwargs['password'])
         elif source_type == 'ngf':
-            return NGFCollector(kwargs['hostname'], kwargs['ext_clnt_id'], kwargs['ext_clnt_secret'])
+            return NGFCollector(kwargs['hostname'], kwargs['username'], kwargs['password'])
         elif source_type == 'mock':
             return MockCollector(kwargs['hostname'], kwargs['username'], kwargs['password'])
         
