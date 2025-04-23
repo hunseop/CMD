@@ -6,8 +6,8 @@ from .mf2_module import show_system_info, export_security_rules, download_object
 import os
 
 class MF2Collector(FirewallInterface):
-    def __init__(self, device_ip: str, username: str, password: str):
-        self.device_ip = device_ip
+    def __init__(self, hostname: str, username: str, password: str):
+        self.device_ip = hostname
         self.username = username
         self.password = password
         module_dir = os.path.dirname(os.path.abspath(__file__))
@@ -18,7 +18,7 @@ class MF2Collector(FirewallInterface):
         # 기본 포트 22 사용
         return show_system_info(self.device_ip, self.username, self.password)
 
-    def export_security_rules(self) -> pd.DataFrame:
+    def export_security_rules(self, **kwargs) -> pd.DataFrame:
         return export_security_rules(self.device_ip, self.username, self.password)
 
     def export_network_objects(self) -> pd.DataFrame:
@@ -77,6 +77,8 @@ class MF2Collector(FirewallInterface):
         service_df = service_df[['name', 'protocol', 'str_svc_port']].rename(
             columns={'name': 'Name', 'protocol': 'Protocol', 'str_svc_port': 'Port'}
         )
+        service_df['Protocol'] = service_df['Protocol'].apply(lambda x: x.lower() if isinstance(x, str) else x)
+        
         delete_files(files)
         return service_df
 

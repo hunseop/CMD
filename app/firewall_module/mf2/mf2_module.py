@@ -8,6 +8,7 @@ from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
 
 # Paramiko의 로그 레벨을 WARNING 이상으로 설정 (INFO 로그 제거)
+logging.getLogger("paramiko").setLevel(logging.WARNING)
 
 # 명령어 상수
 POLICY_DIRECTORY = 'ls -ls *.fwrules'
@@ -196,7 +197,7 @@ def show_system_info(host: str, username: str, password: str) -> pd.DataFrame:
     """
     원격 장비의 시스템 정보를 수집하여 DataFrame으로 반환합니다.
     """
-    ssh = create_ssh_client(host, username, password)
+    ssh = create_ssh_client(host, 22, username, password)
     try:
         # hostname
         _, stdout, _ = ssh.exec_command('hostname')
@@ -632,6 +633,7 @@ def save_dfs_to_excel(dfs, sheet_names, file_name: str) -> bool:
         with pd.ExcelWriter(file_name) as writer:
             for df, sheet in zip(dfs, sheet_names):
                 df.to_excel(writer, sheet_name=sheet, index=False)
+        apply_excel_style(file_name)
         return True
     except Exception as e:
         logging.error("save_dfs_to_excel error: %s", e)
