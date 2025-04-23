@@ -16,10 +16,10 @@ class NGFClient:
     NGF API와 연동하여 로그인, 데이터 조회, 규칙 파싱 등의 기능을 제공하는 클라이언트입니다.
     """
 
-    def __init__(self, hostname: str, ext_clnt_id: str, ext_clnt_secret: str, timeout: int = 60):
+    def __init__(self, hostname: str, username: str, password: str, timeout: int = 60):
         self.hostname = hostname
-        self.ext_clnt_id = ext_clnt_id
-        self.ext_clnt_secret = ext_clnt_secret
+        self.ext_clnt_id = username
+        self.ext_clnt_secret = password
         self.timeout = timeout
         self.token = None
         self.user_agent = (
