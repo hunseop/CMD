@@ -3,6 +3,31 @@ from app.models import FirewallPolicy
 from app.services.firewall.common import get_device_and_collector, create_sync_history, handle_sync_exception
 from datetime import datetime
 
+def parse_date(date_str):
+    """다양한 형식의 날짜 문자열을 파싱합니다.
+    
+    Args:
+        date_str: 날짜 문자열
+        
+    Returns:
+        datetime 객체 또는 None
+    """
+    if not date_str:
+        return None
+        
+    formats = [
+        '%Y-%m-%d %H:%M:%S',  # YYYY-MM-DD HH:MM:SS
+        '%Y-%m-%d',           # YYYY-MM-DD
+    ]
+    
+    for date_format in formats:
+        try:
+            return datetime.strptime(date_str.strip(), date_format)
+        except ValueError:
+            continue
+    
+    return None
+
 def sync_usage_logs(device_id, days=90, is_batch=False, batch_id=None):
     """방화벽 정책 사용 이력을 동기화합니다.
     
@@ -39,7 +64,7 @@ def sync_usage_logs(device_id, days=90, is_batch=False, batch_id=None):
             
             if policy:
                 # 사용 이력 업데이트
-                policy.last_hit = datetime.strptime(last_hit_date, '%Y-%m-%d %H:%M:%S') if last_hit_date else None
+                policy.last_hit = parse_date(last_hit_date)
                 policy.unused_days = unused_days
                 policy.usage_status = usage_status
                 db.session.add(policy)
